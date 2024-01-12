@@ -51,7 +51,7 @@ CREATE TABLE "book"(
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "genre" TEXT NOT NULL,
-    "year_published" DATE NOT NULL,
+    "year_of_award" DATE NOT NULL,
     "verified" BOOLEAN NOT NULL,
     "author_id" SERIAL NOT NULL
 );

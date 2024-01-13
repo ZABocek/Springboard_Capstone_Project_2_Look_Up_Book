@@ -1,25 +1,25 @@
-import logo from './logo.svg';
-import './App.css';
+
+//### 5. Routing with React Router
+
+//To navigate between different pages, we'll use React Router. Here's how you can set it up in your `App.js`:
+
+//jsx
+// App.js
+
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import LoginSignup from './LoginSignup';
+// Import other components here
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <Router>
+            <Switch>
+                <Route path="/" exact component={LoginSignup} />
+                {/* Define other routes here */}
+            </Switch>
+        </Router>
+    );
 }
 
 export default App;

@@ -1,9 +1,9 @@
 // LoginSignup.js in your React app
 
 import React, { useState } from 'react';
-
-const LoginSignup = () => {
-    const [isLogin, setIsLogin] = useState(true);
+function LoginSignup() {
+    const [loginInfo, setLoginInfo] = useState({ username: '', password: '' });
+    const [signupInfo, setSignupInfo] = useState({ username: '', email: '', password: '' });
 
     const toggleLogin = () => {
         setIsLogin(!isLogin);

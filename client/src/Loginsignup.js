@@ -10,8 +10,6 @@ const LoginSignup = () => {
     };
     // Inside your signup route in server.js
 
-    bcrypt.hash(password, 10, function(err, hash) {
-    // Store hash in your &#8203;``【oaicite:0】``&#8203;
     return (
         <div>
             <h1>{isLogin ? 'Please Log In' : 'Please Sign Up'}</h1>
@@ -27,7 +25,7 @@ const LoginSignup = () => {
             </button>
         </div>
     );
-});
-}
+};
+
 
 export default LoginSignup;

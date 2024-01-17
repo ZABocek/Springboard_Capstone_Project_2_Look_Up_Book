@@ -1,5 +1,5 @@
 // LoginSignup.js in your React app
-
+import './LoginSignup.css';
 import React, { useState } from 'react';
 function LoginSignup() {
     const [loginInfo, setLoginInfo] = useState({ username: '', password: '' });

@@ -1,5 +1,4 @@
-// server.js
-
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
@@ -8,21 +7,20 @@ const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 
 const app = express();
-
 app.use(cors());
 app.use(bodyParser.json());
 
 // PostgreSQL connection setup
 const pool = new Pool({
-    user: 'your_database_user',
-    host: 'localhost',
-    database: 'your_database_name',
-    password: 'your_database_password',
-    port: 5432,
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
 });
 
 // JWT secret key
-const jwtSecret = 'your_jwt_secret_key';
+const jwtSecret = process.env.JWT_SECRET;
 
 app.post('/signup', async (req, res) => {
     const { username, password, email } = req.body;
@@ -32,9 +30,8 @@ app.post('/signup', async (req, res) => {
     }
 
     const saltRounds = 10;
-    const hash = await bcrypt.hash(password, saltRounds);
-
     try {
+        const hash = await bcrypt.hash(password, saltRounds);
         const client = await pool.connect();
         const user = await client.query('INSERT INTO users (username, email, hash) VALUES ($1, $2, $3) RETURNING *', [username, email, hash]);
 

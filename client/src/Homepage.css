@@ -36,3 +36,28 @@
         margin: 10px 0;
     }
 }
+
+.book-table {
+    width: 100%;
+    text-align: center;
+}
+
+.book-table table {
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+
+.book-table th, .book-table td {
+    border: 1px solid black;
+    padding: 8px;
+}
+
+.book-table th {
+    background-color: #f2f2f2;
+}
+
+/* An elegant and widely supported font */
+.book-table {
+    font-family: 'Arial', sans-serif;
+}
+

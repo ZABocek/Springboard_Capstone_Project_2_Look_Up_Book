@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 function LoginSignup() {
     const [loginInfo, setLoginInfo] = useState({ username: '', password: '' });
     const [signupInfo, setSignupInfo] = useState({ username: '', email: '', password: '' });
+    const [isLogin, setIsLogin] = useState(true); // Add this line
 
     const toggleLogin = () => {
         setIsLogin(!isLogin);

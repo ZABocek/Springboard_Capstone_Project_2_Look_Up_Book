@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginSignup from './LoginSignup';
 import Homepage from './Homepage'; // You need to create this component
 
@@ -15,11 +15,11 @@ function App() {
 
   return (
     <Router>
-      <Switch>
+      <Routes>
         <Route exact path="/">
           {isAuthenticated ? <Homepage /> : <LoginSignup />}
         </Route>
-      </Switch>
+      </Routes>
     </Router>
   );
 }

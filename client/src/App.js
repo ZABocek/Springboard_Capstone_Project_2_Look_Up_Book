@@ -16,9 +16,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route exact path="/">
-          {isAuthenticated ? <Homepage /> : <LoginSignup />}
-        </Route>
+        <Route path="/"
+          element = {isAuthenticated ? <Homepage /> : <LoginSignup />}
+          />
       </Routes>
     </Router>
   );

@@ -1,6 +1,8 @@
-// LoginSignup.js in your React app
 import './LoginSignup.css';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
 function LoginSignup() {
     const [loginInfo, setLoginInfo] = useState({ username: '', password: '' });
     const [signupInfo, setSignupInfo] = useState({ username: '', email: '', password: '' });

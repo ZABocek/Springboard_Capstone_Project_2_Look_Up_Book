@@ -16,13 +16,13 @@ function LoginSignup() {
     const onLoginSubmit = (event) => {
         event.preventDefault();
         // Your existing login logic
-        navigate('/homepage');
+        navigate('/Homepage');
     };
 
     const onRegisterSubmit = (event) => {
         event.preventDefault();
         // Your existing registration logic
-        navigate('/homepage');
+        navigate('/Homepage');
     };
 
     const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup

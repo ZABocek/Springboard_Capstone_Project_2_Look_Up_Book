@@ -1,7 +1,7 @@
 import './LoginSignup.css';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// Other necessary imports
 
 function LoginSignup() {
     const [loginEmail, setLoginEmail] = useState('');
@@ -9,23 +9,23 @@ function LoginSignup() {
     const [registerEmail, setRegisterEmail] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerName, setRegisterName] = useState('');
-    // Add other state variables as in your original file
+    const [isLogin, setIsLogin] = useState(true); // isLogin state defined here
 
     const navigate = useNavigate();
 
     const onLoginSubmit = (event) => {
         event.preventDefault();
-        // Your existing logic to handle login
-        // On successful login, redirect to homepage
+        // Your existing login logic
         navigate('/homepage');
     };
 
     const onRegisterSubmit = (event) => {
         event.preventDefault();
-        // Your existing logic to handle registration
-        // On successful registration, redirect to homepage
+        // Your existing registration logic
         navigate('/homepage');
     };
+
+    const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup
 
     return (
         <div>
@@ -74,7 +74,7 @@ function LoginSignup() {
                 {isLogin ? 'Need to create an account?' : 'Already have an account?'}
             </button>
         </div>
-    ); 
-};
+    );
+}
 
 export default LoginSignup;

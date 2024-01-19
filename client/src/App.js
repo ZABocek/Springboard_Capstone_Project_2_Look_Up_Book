@@ -16,9 +16,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/"
-          element = {isAuthenticated ? <Homepage /> : <LoginSignup />}
-          />
+        <Route path="/login" element={<LoginSignup />} />
+        <Route path="/homepage" element={<Homepage />} />
       </Routes>
     </Router>
   );

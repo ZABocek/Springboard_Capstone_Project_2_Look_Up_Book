@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const xlsx = require('xlsx');
 
 const app = express();
 app.use(cors());
@@ -42,6 +43,30 @@ app.post('/signup', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).send('Error registering new user');
+    }
+});
+
+app.get('/api/books', async (req, res) => {
+    try {
+        // Read the Excel file
+        const workbook = xlsx.readFile('lit_prize_winners_and_judges_data.xlsx');
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = xlsx.utils.sheet_to_json(sheet);
+
+        // Filter and map the data
+        const filteredBooks = data.filter(book => book.title_of_winning_book && book.role === 'winner').map(book => ({
+            title: book.title_of_winning_book,
+            author: book.full_name,
+            prize: book.prize_name
+        }));
+
+        // Shuffle and select 10 books
+        const selectedBooks = filteredBooks.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+        res.json(selectedBooks);
+    } catch (error) {
+        console.error('Error fetching books:', error);
+        res.status(500).send('Error fetching books');
     }
 });
 

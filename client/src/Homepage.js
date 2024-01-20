@@ -5,17 +5,19 @@ const Homepage = () => {
     const [selectedBooks, setSelectedBooks] = useState([]);
 
     useEffect(() => {
-        // Mock data representing the filtered and sorted data from the spreadsheet
-        const books = [
-            // ... include all filtered and sorted books here ...
-            { title: 'Insurrections', author: 'Rion Amilcar Scott', prize: 'Robert W. Bingham Prize for Debut Short Story Collection' },
-            // ... more book entries ...
-        ];
-
-        // Randomly select 10 unique books
-        const shuffledBooks = books.sort(() => 0.5 - Math.random());
-        setSelectedBooks(shuffledBooks.slice(0, 10));
-    }, []);
+        async function fetchBooks() {
+            try {
+                const response = await fetch('/api/books');
+                const books = await response.json();
+    
+                setSelectedBooks(books);
+            } catch (error) {
+                console.error('Error fetching books:', error);
+            }
+        }
+    
+        fetchBooks();
+    }, []);    
 
     return (
         <div className="homepage">

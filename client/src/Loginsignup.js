@@ -38,6 +38,7 @@ function LoginSignup() {
                             placeholder="Username"
                             value={loginEmail}
                             onChange={(e) => setLoginEmail(e.target.value)}
+                            autoComplete="current-username"
                         />
                         <input
                             type="password"
@@ -55,6 +56,7 @@ function LoginSignup() {
                             placeholder="Name"
                             value={registerName}
                             onChange={(e) => setRegisterName(e.target.value)}
+                            autoComplete="new-name"
                         />
                         <input
                             type="email"

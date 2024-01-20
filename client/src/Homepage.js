@@ -8,8 +8,10 @@ const Homepage = () => {
         async function fetchBooks() {
             try {
                 const response = await fetch('/api/books');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const books = await response.json();
-    
                 setSelectedBooks(books);
             } catch (error) {
                 console.error('Error fetching books:', error);

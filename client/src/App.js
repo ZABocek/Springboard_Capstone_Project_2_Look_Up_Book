@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginSignup from './LoginSignup';
 import Homepage from './Homepage'; // Ensure this component is correctly imported
 
@@ -15,6 +15,7 @@ function App() {
     return (
         <Router>
             <Routes>
+                <Route path="/" element={<Navigate replace to="/login" />} />
                 <Route path="/login" element={isAuthenticated ? <Homepage /> : <LoginSignup />} />
                 <Route path="/homepage" element={<Homepage />} />
             </Routes>

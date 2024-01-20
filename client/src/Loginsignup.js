@@ -44,7 +44,9 @@ function LoginSignup() {
                             placeholder="Password"
                             value={loginPassword}
                             onChange={(e) => setLoginPassword(e.target.value)}
+                            autoComplete="current-password"
                         />
+
                     </>
                 ) : (
                     <>
@@ -65,7 +67,9 @@ function LoginSignup() {
                             placeholder="Password"
                             value={registerPassword}
                             onChange={(e) => setRegisterPassword(e.target.value)}
+                            autoComplete="new-password" // Use "new-password" for registration forms
                         />
+
                     </>
                 )}
                 <button type="submit">{isLogin ? 'Log In' : 'Sign Up'}</button>

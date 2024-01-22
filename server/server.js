@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' }); // Adjust the path to the .env file if needed
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
@@ -10,7 +10,6 @@ const xlsx = require('xlsx');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-
 // PostgreSQL connection setup
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -49,7 +48,7 @@ app.post('/signup', async (req, res) => {
 app.get('/api/books', async (req, res) => {
     try {
         // Read the Excel file
-        const workbook = xlsx.readFile('lit_prize_winners_and_judges_data.xlsx');
+        const workbook = xlsx.readFile('client/src/lit_prize_winners_and_judges_data.xlsx');
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const data = xlsx.utils.sheet_to_json(sheet);
 
@@ -70,6 +69,6 @@ app.get('/api/books', async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+app.listen(5000, () => {
+    console.log('Server is running on port 5000');
 });

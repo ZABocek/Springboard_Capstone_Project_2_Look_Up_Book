@@ -48,7 +48,7 @@ app.post('/signup', async (req, res) => {
 app.get('/api/books', async (req, res) => {
     try {
         // Read the Excel file
-        const workbook = xlsx.readFile('client/src/lit_prize_winners_and_judges_data.xlsx');
+        const workbook = xlsx.readFile('./client/src/lit_prize_winners_and_judges_data.xlsx');
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const data = xlsx.utils.sheet_to_json(sheet);
 

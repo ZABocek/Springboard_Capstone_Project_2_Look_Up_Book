@@ -3,7 +3,7 @@ import psycopg2
 from sqlalchemy import create_engine
 
 # Load the Excel file
-df = pd.read_excel('path_to_excel_file')
+df = pd.read_excel('../client/src/lit_prize_winners_and_judges_data.xlsx')
 
 # Filter and map the data
 filtered_books = df[df['title_of_winning_book'].notna() & (df['role'] == 'winner')][['full_name', 'title_of_winning_book', 'prize_name']]

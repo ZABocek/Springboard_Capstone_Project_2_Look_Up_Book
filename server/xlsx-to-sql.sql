@@ -1,4 +1,4 @@
-﻿CREATE TABLE tableName 
+CREATE TABLE tableName 
 (
  person_id	INT,
  full_name	VARCHAR(512),

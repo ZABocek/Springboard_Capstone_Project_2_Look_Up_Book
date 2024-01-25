@@ -15,13 +15,7 @@
  prize_genre	VARCHAR(512),
  prize_type	VARCHAR(512),
  prize_amount	INT,
- title_of_winning_book	VARCHAR(512),
- 	VARCHAR(512),
- 	VARCHAR(512),
- 	VARCHAR(512),
- 	VARCHAR(512),
- 	VARCHAR(512),
- 	VARCHAR(512)
+ title_of_winning_book	VARCHAR(512)
 );
 
 INSERT INTO tableName (person_id, full_name, given_name, last_name, gender, elite_institution, graduate_degree, mfa_degree, role, prize_institution, prize_name, prize_year, prize_genre, prize_type, prize_amount, title_of_winning_book) VALUES ('1', 'A. B. Guthrie Jr', 'A. B.', 'Guthrie Jr', 'male', NULL, NULL, NULL, 'winner', 'Columbia University', 'Pulitzer Prize', '1950', 'prose', 'book', '15000', 'The Way West');

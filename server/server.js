@@ -45,7 +45,7 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-app.get('/api/books', async (req, res) => {
+app.get('/server/xlsx-to-sql', async (req, res) => {
     try {
         const client = await pool.connect();
 

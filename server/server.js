@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
-const xlsx = require('xlsx');
 
 const app = express();
 app.use(cors());
@@ -45,7 +44,7 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-app.get('/server/xlsx-to-sql', async (req, res) => {
+app.get('/api/books', async (req, res) => {
     try {
         const client = await pool.connect();
 

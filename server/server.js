@@ -47,27 +47,27 @@ app.post('/signup', async (req, res) => {
 
 app.get('/api/books', async (req, res) => {
     try {
-        // Read the Excel file
-        const workbook = xlsx.readFile('../client/src/lit_prize_winners_and_judges_data.xlsx');
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const data = xlsx.utils.sheet_to_json(sheet);
+        const client = await pool.connect();
 
-        // Filter and map the data
-        const filteredBooks = data.filter(book => book.title_of_winning_book && book.role === 'winner').map(book => ({
-            title: book.title_of_winning_book,
-            author: book.full_name,
-            prize: book.prize_name
-        }));
+        // SQL query to get 10 random books where role is 'winner' and title_of_winning_book is not null
+        const queryText = `
+            SELECT full_name, title_of_winning_book, prize_name
+            FROM books
+            WHERE role = 'winner' AND title_of_winning_book IS NOT NULL
+            ORDER BY RANDOM()
+            LIMIT 10;
+        `;
 
-        // Shuffle and select 10 books
-        const selectedBooks = filteredBooks.sort(() => 0.5 - Math.random()).slice(0, 10);
+        const result = await client.query(queryText);
 
-        res.json(selectedBooks);
+        res.json(result.rows);
+        client.release();
     } catch (error) {
-        console.error('Error fetching books:', error);
+        console.error('Error fetching books from database:', error);
         res.status(500).send('Error fetching books');
     }
 });
+
 
 app.listen(5000, () => {
     console.log('Server is running on port 5000');

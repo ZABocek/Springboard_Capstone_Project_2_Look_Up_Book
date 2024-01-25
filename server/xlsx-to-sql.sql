@@ -17,7 +17,6 @@
  prize_amount	INT,
  title_of_winning_book	VARCHAR(512)
 );
-
 INSERT INTO tableName (person_id, full_name, given_name, last_name, gender, elite_institution, graduate_degree, mfa_degree, role, prize_institution, prize_name, prize_year, prize_genre, prize_type, prize_amount, title_of_winning_book) VALUES ('1', 'A. B. Guthrie Jr', 'A. B.', 'Guthrie Jr', 'male', NULL, NULL, NULL, 'winner', 'Columbia University', 'Pulitzer Prize', '1950', 'prose', 'book', '15000', 'The Way West');
 INSERT INTO tableName (person_id, full_name, given_name, last_name, gender, elite_institution, graduate_degree, mfa_degree, role, prize_institution, prize_name, prize_year, prize_genre, prize_type, prize_amount, title_of_winning_book) VALUES ('2', 'A. E. Stallings', 'A. E.', 'Stallings', 'female', NULL, 'graduate', NULL, 'winner', 'American Academy of Arts and Letters', 'Benjamin H. Danks Award', '2008', 'no genre', 'career', '20000', NULL);
 INSERT INTO tableName (person_id, full_name, given_name, last_name, gender, elite_institution, graduate_degree, mfa_degree, role, prize_institution, prize_name, prize_year, prize_genre, prize_type, prize_amount, title_of_winning_book) VALUES ('2', 'A. E. Stallings', 'A. E.', 'Stallings', 'female', NULL, 'graduate', NULL, 'winner', 'MacArthur Foundation', 'MacArthur Fellowship', '2011', 'no genre', 'career', '500000', NULL);

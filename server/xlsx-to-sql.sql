@@ -1,3 +1,9 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    hash VARCHAR(255) NOT NULL
+);
 CREATE TABLE tableName 
 (
  person_id	INT,

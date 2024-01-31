@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../.env' }); // Adjust the path to the .env file if needed
+require('dotenv').config({ path: './server/.env' }); // Adjust the path to the .env file if needed
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');

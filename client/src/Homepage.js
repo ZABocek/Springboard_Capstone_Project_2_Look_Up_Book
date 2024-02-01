@@ -44,7 +44,7 @@ const Homepage = () => {
                             <th>Title</th>
                             <th>Genre</th>
                             <th>Year</th>
-                            <th>Author_ID</th>
+                            <th>Author ID</th>
                             <th>Verified</th>
                         </tr>
                     </thead>
@@ -54,7 +54,7 @@ const Homepage = () => {
                                 <td>{book.title_of_winning_book}</td>
                                 <td>{book.prize_genre}</td>
                                 <td>{book.prize_year}</td>
-                                <td>(book.person_id)</td>
+                                <td>{book.person_id}</td>
                                 <td>True</td>
                             </tr>
                         ))}

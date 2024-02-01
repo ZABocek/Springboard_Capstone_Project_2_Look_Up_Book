@@ -29,7 +29,8 @@ const Homepage = () => {
             <h2 className="recommendation-message">Here are 10 books recommended for you to enjoy from award-winning authors!</h2>
             <nav className="navbar">
                 <ul>
-                    <li><a href="/add-book">Add Book to Profile</a></li>
+                    <li><a href="/add-db-book">Add Book from Database to Profile</a></li>
+                    <li><a href="/add-new-book">Add New Award-winning Book to Profile</a></li>
                     <li><a href="/search-books">Search Books</a></li>
                     <li><a href="/profile">Profile Page</a></li>
                     <li><a href="/search-authors">Search Authors</a></li>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './Homepage.css';
 
 const Homepage = () => {
     const [selectedBooks, setSelectedBooks] = useState([]);
+    const navigate = useNavigate(); // Initialize useNavigate
 
     useEffect(() => {
         async function fetchBooks() {
@@ -21,7 +23,14 @@ const Homepage = () => {
         }
     
         fetchBooks();
-    }, []);    
+    }, []);   
+    
+    // Add this function to handle logout
+    const handleLogout = () => {
+        // Here you should clear your authentication token or session
+        localStorage.removeItem('token'); // For example, if you're using localStorage
+        navigate('/login'); // Redirect to login page
+    };
 
     return (
         <div className="homepage">
@@ -35,7 +44,7 @@ const Homepage = () => {
                     <li><a href="/profile">Profile Page</a></li>
                     <li><a href="/search-awards">Search Books by Awards</a></li>
                     <li><a href="/delete-book">Delete Book from Profile</a></li>
-                    <li><a href="/logout">Logout</a></li>
+                    <li><a href="#" onClick={handleLogout}>Logout</a></li> {/* Modify this line */}
                 </ul>
             </nav>
             <div className="book-table">

@@ -36,6 +36,7 @@ const Homepage = () => {
                     <li><a href="/search-authors">Search Authors by Awards</a></li>
                     <li><a href="/search-awards">Search Books by Awards</a></li>
                     <li><a href="/delete-book">Delete Book from Profile</a></li>
+                    <li><a href="/logout">Logout</a></li>
                 </ul>
             </nav>
             <div className="book-table">

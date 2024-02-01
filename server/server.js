@@ -47,10 +47,10 @@ app.post('/signup', async (req, res) => {
 app.get('/api/tableName', async (req, res) => {
     try {
         const client = await pool.connect();
-
+        
         // SQL query to get 10 random books where role is 'winner' and title_of_winning_book is not null
         const queryText = `
-            SELECT full_name, title_of_winning_book, prize_name
+            SELECT title_of_winning_book, prize_genre, prize_year, person_id
             FROM tableName
             WHERE role = 'winner' AND title_of_winning_book IS NOT NULL
             ORDER BY RANDOM()

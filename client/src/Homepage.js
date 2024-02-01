@@ -12,7 +12,9 @@ const Homepage = () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const books = await response.json();
+                
                 setSelectedBooks(books);
+                console.log(selectedBooks);
             } catch (error) {
                 console.error('Error fetching books:', error);
             }
@@ -40,16 +42,20 @@ const Homepage = () => {
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Author</th>
-                            <th>Prize</th>
+                            <th>Genre</th>
+                            <th>Year</th>
+                            <th>Author_ID</th>
+                            <th>Verified</th>
                         </tr>
                     </thead>
                     <tbody>
                         {selectedBooks.map((book, index) => (
                             <tr key={index}>
-                                <td>{book.title}</td>
-                                <td>{book.author}</td>
-                                <td>{book.prize}</td>
+                                <td>{book.title_of_winning_book}</td>
+                                <td>{book.prize_genre}</td>
+                                <td>{book.prize_year}</td>
+                                <td>(book.person_id)</td>
+                                <td>True</td>
                             </tr>
                         ))}
                     </tbody>

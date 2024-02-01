@@ -1,6 +1,7 @@
 .homepage {
     text-align: center;
     font-family: 'Cursive', sans-serif;
+    font-size: 5px;
 }
 
 .welcome-message, .recommendation-message {

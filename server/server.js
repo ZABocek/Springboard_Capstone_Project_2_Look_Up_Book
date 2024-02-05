@@ -67,6 +67,37 @@ app.get('/api/tableName', async (req, res) => {
     }
 });
 
+app.get('/api/authors', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const queryText = 'SELECT DISTINCT author_id, last_name, given_name FROM tableName WHERE author_id IS NOT NULL ORDER BY last_name, given_name;';
+        const result = await client.query(queryText);
+        res.json(result.rows);
+        client.release();
+    } catch (error) {
+        console.error('Error fetching authors:', error);
+        res.status(500).send('Error fetching authors');
+    }
+});
+
+app.get('/api/books/:authorId', async (req, res) => {
+    const { authorId } = req.params;
+    try {
+        const client = await pool.connect();
+        const queryText = `
+            SELECT book_id, title_of_winning_book, prize_genre, prize_year, verified, author_id
+            FROM tableName
+            WHERE author_id = $1
+            ORDER BY book_id;
+        `;
+        const result = await client.query(queryText, [authorId]);
+        res.json(result.rows);
+        client.release();
+    } catch (error) {
+        console.error(`Error fetching books for author ${authorId}:`, error);
+        res.status(500).send('Error fetching books');
+    }
+});
 
 app.listen(5000, () => {
     console.log('Server is running on port 5000');

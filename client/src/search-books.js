@@ -49,7 +49,7 @@ const SearchBooks = () => {
                     </table>
                 ))}
             </div>
-            <button onClick={() => navigate('/')}>Back to Homepage</button>
+            <button onClick={() => navigate('/Homepage')}>Back to Homepage</button>
         </div>
     );
 };

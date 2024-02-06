@@ -99,6 +99,25 @@ app.get('/api/books/:authorId', async (req, res) => {
     }
 });
 
+// Add this endpoint to server.js
+app.get('/api/awards', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const queryText = `
+            SELECT DISTINCT award_id, prize_name
+            FROM tableName
+            WHERE role = 'winner' AND prize_type = 'book' AND title_of_winning_book IS NOT NULL AND title_of_winning_book != ''
+            ORDER BY award_id;
+        `;
+        const result = await client.query(queryText);
+        res.json(result.rows);
+        client.release();
+    } catch (error) {
+        console.error('Error fetching awards:', error);
+        res.status(500).send('Error fetching awards');
+    }
+});
+
 app.listen(5000, () => {
     console.log('Server is running on port 5000');
 });

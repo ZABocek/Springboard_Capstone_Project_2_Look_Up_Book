@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import LoginSignup from './LoginSignup';
 import Homepage from './Homepage'; // Ensure this component is correctly imported
 import SearchBooks from './search-books'; // Ensure this component is correctly imported
+import SearchAwards from './search-awards'; // Adjust the path as necessary
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -20,6 +21,7 @@ function App() {
                 <Route path="/login" element={isAuthenticated ? <Homepage /> : <LoginSignup />} />
                 <Route path="/homepage" element={<Homepage />} />
                 <Route path="/search-books" element={<SearchBooks />} />
+                <Route path="/search-awards" element={<SearchAwards />} />
             </Routes>
         </Router>
     );

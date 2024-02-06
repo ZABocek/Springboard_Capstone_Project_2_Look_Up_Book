@@ -118,6 +118,24 @@ app.get('/api/awards', async (req, res) => {
     }
 });
 
+app.get('/api/awards/:awardId', async (req, res) => {
+    const { awardId } = req.params;
+    try {
+        const client = await pool.connect();
+        const queryText = `
+            SELECT * FROM tableName
+            WHERE award_id = $1 AND role = 'winner' AND prize_type = 'book' AND title_of_winning_book IS NOT NULL AND title_of_winning_book != ''
+            ORDER BY prize_year;
+        `;
+        const result = await client.query(queryText, [awardId]);
+        res.json(result.rows);
+        client.release();
+    } catch (error) {
+        console.error(`Error fetching books for award ${awardId}:`, error);
+        res.status(500).send('Error fetching books');
+    }
+});
+
 app.listen(5000, () => {
     console.log('Server is running on port 5000');
 });

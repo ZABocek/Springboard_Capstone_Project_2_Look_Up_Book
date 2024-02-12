@@ -137,6 +137,33 @@ app.get('/api/awards/:awardId', async (req, res) => {
     }
 });
 
+// Endpoint to handle likes and dislikes
+app.post('/api/like', async (req, res) => {
+    const { userId, bookId, liked } = req.body; // Note: 'liked' is now a boolean indicating like or dislike
+
+    try {
+        const client = await pool.connect();
+
+        // Check if there's an existing like/dislike by the user for this book
+        const existingEntry = await client.query('SELECT * FROM user_book_likes WHERE user_id = $1 AND book_id = $2', [userId, bookId]);
+
+        if (existingEntry.rows.length > 0) {
+            // Update the existing entry if user changes their like/dislike
+            await client.query('UPDATE user_book_likes SET liked = $1, likedOn = NOW() WHERE user_id = $2 AND book_id = $3', [liked, userId, bookId]);
+        } else {
+            // Insert new like/dislike
+            await client.query('INSERT INTO user_book_likes (user_id, book_id, liked, likedOn) VALUES ($1, $2, $3, NOW())', [userId, bookId, liked]);
+        }
+        res.json({ message: 'Success' });
+        client.release();
+    } catch (error) {
+        console.error('Error processing like/dislike', error);
+        res.status(500).send('Error processing like/dislike');
+    }
+});
+
+
+
 app.listen(5000, () => {
     console.log('Server is running on port 5000');
 });

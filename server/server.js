@@ -40,8 +40,9 @@ app.post('/signup', async (req, res) => {
         client.release();
     } catch (err) {
         console.error(err);
-        res.status(500).send('Error registering new user');
+        res.status(500).json({ message: 'Error registering new user', error: err.message });
     }
+    
 });
 
 app.get('/api/tableName', async (req, res) => {

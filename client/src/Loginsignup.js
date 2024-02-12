@@ -36,20 +36,25 @@ function LoginSignup() {
                 body: JSON.stringify(newUser),
             });
     
-            const data = await response.json();
+            if (!response.ok) {
+                // Attempt to read the response as text if it's not OK and not JSON
+                const errorText = await response.text();
+                throw new Error(`Server responded with ${response.status}: ${errorText}`);
+            }
+    
+            const data = await response.json(); // Assuming the happy path returns JSON
             if (data.token) {
                 localStorage.setItem('token', data.token);
                 navigate('/Homepage');
             } else {
-                // Handle registration errors (e.g., user already exists)
-                console.error("Registration error:", data.message); // Adjusted to log `data.message`
-                // Here, you might want to update the component state to show an error message to the user
+                console.error("Registration error:", data.message);
             }
         } catch (error) {
             console.error("Error registering new user:", error);
-            // Again, you might update the component state here to display the error
+            // Update the component state here to display the error
         }
     };
+    
 
     const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup
 

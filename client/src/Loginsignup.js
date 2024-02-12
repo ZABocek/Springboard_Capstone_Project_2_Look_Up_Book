@@ -42,15 +42,14 @@ function LoginSignup() {
                 navigate('/Homepage');
             } else {
                 // Handle registration errors (e.g., user already exists)
-                console.error(data);
+                console.error("Registration error:", data.message); // Adjusted to log `data.message`
+                // Here, you might want to update the component state to show an error message to the user
             }
         } catch (error) {
-            // Inside your catch block for the /signup route
-            console.error("Error registering new user:", error.message);
-            res.status(500).send('Error registering new user');
+            console.error("Error registering new user:", error);
+            // Again, you might update the component state here to display the error
         }
     };
-    
 
     const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup
 

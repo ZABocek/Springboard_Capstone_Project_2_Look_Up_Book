@@ -19,11 +19,38 @@ function LoginSignup() {
         navigate('/Homepage');
     };
 
-    const onRegisterSubmit = (event) => {
+    const onRegisterSubmit = async (event) => {
         event.preventDefault();
-        // Your existing registration logic
-        navigate('/Homepage');
+        const newUser = {
+            username: registerName,
+            email: registerEmail,
+            password: registerPassword,
+        };
+    
+        try {
+            const response = await fetch('http://localhost:5000/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newUser),
+            });
+    
+            const data = await response.json();
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                navigate('/Homepage');
+            } else {
+                // Handle registration errors (e.g., user already exists)
+                console.error(data);
+            }
+        } catch (error) {
+            // Inside your catch block for the /signup route
+            console.error("Error registering new user:", error.message);
+            res.status(500).send('Error registering new user');
+        }
     };
+    
 
     const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup
 

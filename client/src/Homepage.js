@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './Homepage.css';
-const likeIconURL = "C:\\Users\\zaboc\\Capstone_Project_2_Look_Up_Book\\client\\src\\like_9790408.png";
-const dislikeIconURL = "C:\\Users\\zaboc\\Capstone_Project_2_Look_Up_Book\\client\\src\\dislike_6933384.png";
+const likeIconURL = "/like_9790408.png";
+const dislikeIconURL = "/dislike_6933384.png";
 const Homepage = () => {
     const [selectedBooks, setSelectedBooks] = useState([]);
     const navigate = useNavigate(); // Initialize useNavigate

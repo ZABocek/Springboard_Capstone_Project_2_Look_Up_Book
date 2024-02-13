@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './Homepage.css';
-const likeIconURL = "/like_9790408.png";
-const dislikeIconURL = "/dislike_6933384.png";
+const likeIconURL = "like_9790408.png";
+const dislikeIconURL = "dislike_6933384.png";
 const Homepage = () => {
     const [selectedBooks, setSelectedBooks] = useState([]);
     const navigate = useNavigate(); // Initialize useNavigate
@@ -73,6 +73,7 @@ const handleLike = async (bookId, liked) => {
                     <thead>
                         <tr>
                             <th>Title</th>
+                            <th>Like/Dislike</th>
                             <th>Genre</th>
                             <th>Year</th>
                             <th>Verified</th>

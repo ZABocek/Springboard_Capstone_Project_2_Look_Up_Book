@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './Homepage.css';
-
+const likeIconURL = "C:\Users\zaboc\Capstone_Project_2_Look_Up_Book\client\src\like_9790408.png";
+const dislikeIconURL = "C:\Users\zaboc\Capstone_Project_2_Look_Up_Book\client\src\dislike_6933384.png";
 const Homepage = () => {
     const [selectedBooks, setSelectedBooks] = useState([]);
     const navigate = useNavigate(); // Initialize useNavigate
@@ -24,6 +25,26 @@ const Homepage = () => {
     
         fetchBooks();
     }, []);   
+
+    // Inside the Homepage component
+const handleLike = async (bookId, liked) => {
+    const userId = localStorage.getItem('userId'); // Ensure you're setting this upon user login
+    try {
+        const response = await fetch('http://localhost:5000/api/like', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, bookId, liked })
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        // Optionally, you might want to refresh the list of books to show updated like/dislike status
+        console.log('Like/dislike successfully processed');
+    } catch (error) {
+        console.error('Error processing like/dislike:', error);
+    }
+};
+
     
     // Add this function to handle logout
     const handleLogout = () => {
@@ -60,19 +81,23 @@ const Homepage = () => {
                     </thead>
                     <tbody>
                         {selectedBooks.map((book, index) => (
-                            <tr key={index}>
-                                <td>{book.title_of_winning_book}</td>
+                        <tr key={index}>
+                            <td>{book.title_of_winning_book}</td>
+                            <td>
+                                <img src={likeIconURL} alt="Like" onClick={() => handleLike(book.book_id, true)} style={{ cursor: 'pointer', marginRight: '10px' }} />
+                                <img src={dislikeIconURL} alt="Dislike" onClick={() => handleLike(book.book_id, false)} style={{ cursor: 'pointer' }} />
+                                </td>
                                 <td>{book.prize_genre}</td>
                                 <td>{book.prize_year}</td>
                                 <td>{book.verified ? 'True' : 'False'}</td>
                                 <td>{book.person_id}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-};
+                                </tr>
+                                ))}
+                                </tbody>
+                                </table>
+                                </div>
+                                </div>
+                                );
+                            };
 
 export default Homepage;

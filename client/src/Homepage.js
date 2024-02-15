@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './Homepage.css';
-const likeIconURL = "like_9790408.png";
-const dislikeIconURL = "dislike_6933384.png";
+import likeIconURL from "./like_9790408.png";
+import dislikeIconURL from "./dislike_6933384.png";
 const Homepage = () => {
     const [selectedBooks, setSelectedBooks] = useState([]);
     const navigate = useNavigate(); // Initialize useNavigate
@@ -29,6 +29,7 @@ const Homepage = () => {
     // Inside the Homepage component
 const handleLike = async (bookId, liked) => {
     const userId = localStorage.getItem('userId'); // Ensure you're setting this upon user login
+    console.log(userId);
     try {
         const response = await fetch('http://localhost:5000/api/like', {
             method: 'POST',
@@ -85,8 +86,8 @@ const handleLike = async (bookId, liked) => {
                         <tr key={index}>
                             <td>{book.title_of_winning_book}</td>
                             <td>
-                                <img src={likeIconURL} alt="Like" onClick={() => handleLike(book.book_id, true)} style={{ cursor: 'pointer', marginRight: '10px' }} />
-                                <img src={dislikeIconURL} alt="Dislike" onClick={() => handleLike(book.book_id, false)} style={{ cursor: 'pointer' }} />
+                                <img src={likeIconURL} alt="Like" onClick={() => handleLike(book.book_id, true)} style={{ cursor: 'pointer', marginRight: '10px', height: '50px' }} />
+                                <img src={dislikeIconURL} alt="Dislike" onClick={() => handleLike(book.book_id, false)} style={{ cursor: 'pointer', height: '50px' }} />
                                 </td>
                                 <td>{book.prize_genre}</td>
                                 <td>{book.prize_year}</td>

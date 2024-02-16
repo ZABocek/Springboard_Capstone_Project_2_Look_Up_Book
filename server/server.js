@@ -32,17 +32,18 @@ app.post('/signup', async (req, res) => {
     try {
         const hash = await bcrypt.hash(password, saltRounds);
         const client = await pool.connect();
+        // When inserting the user, you're already returning the user data
         const user = await client.query('INSERT INTO users (username, email, hash) VALUES ($1, $2, $3) RETURNING *', [username, email, hash]);
 
         const token = jwt.sign({ id: user.rows[0].id }, jwtSecret, { expiresIn: '2h' });
 
-        res.json({ token });
+        // Include userId in the response
+        res.json({ token, userId: user.rows[0].id }); // Modified line
         client.release();
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error registering new user', error: err.message });
     }
-    
 });
 
 app.get('/api/tableName', async (req, res) => {

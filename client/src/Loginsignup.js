@@ -13,11 +13,37 @@ function LoginSignup() {
 
     const navigate = useNavigate();
 
-    const onLoginSubmit = (event) => {
+    const onLoginSubmit = async (event) => {
         event.preventDefault();
-        // Your existing login logic
-        navigate('/Homepage');
+        // Assuming you have logic here to send credentials to your server
+        try {
+            const response = await fetch('http://localhost:5000/login', { // Change to your actual login endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: loginEmail, password: loginPassword }), // Assuming you use email and password for login
+            });
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server responded with ${response.status}: ${errorText}`);
+            }
+    
+            const data = await response.json();
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data.userId); // Set user ID after successful login
+                navigate('/Homepage');
+            } else {
+                // Handle login error
+                console.error("Login error:", data.message);
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+        }
     };
+    
 
     const onRegisterSubmit = async (event) => {
         event.preventDefault();
@@ -37,7 +63,6 @@ function LoginSignup() {
             });
     
             if (!response.ok) {
-                // Attempt to read the response as text if it's not OK and not JSON
                 const errorText = await response.text();
                 throw new Error(`Server responded with ${response.status}: ${errorText}`);
             }
@@ -45,15 +70,16 @@ function LoginSignup() {
             const data = await response.json(); // Assuming the happy path returns JSON
             if (data.token) {
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data.userId); // Correctly placed here
                 navigate('/Homepage');
             } else {
                 console.error("Registration error:", data.message);
             }
         } catch (error) {
             console.error("Error registering new user:", error);
-            // Update the component state here to display the error
         }
     };
+    
     
 
     const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup

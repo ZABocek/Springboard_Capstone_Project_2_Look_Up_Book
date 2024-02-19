@@ -34,29 +34,34 @@ const Homepage = () => {
   // Inside the Homepage component
   const handleLike = async (bookId, liked) => {
     const userId = localStorage.getItem("userId");
-    console.log(
-      "Attempting to like/dislike bookId:",
-      bookId,
-      "Liked:",
-      liked,
-      "UserId:",
-      userId
-    ); // Debugging line
-
+  
     try {
       const response = await fetch("http://localhost:5000/api/like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, bookId, liked }),
       });
+  
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-      console.log("Like/dislike successfully processed");
+  
+      const data = await response.json();
+      console.log("Like/dislike successfully processed", data);
+  
+      // Update local state with new counts
+      setSelectedBooks((currentBooks) =>
+        currentBooks.map((book) =>
+          book.book_id === bookId
+            ? { ...book, like_count: data.likeCount, dislike_count: data.dislikeCount }
+            : book
+        )
+      );
     } catch (error) {
       console.error("Error processing like/dislike:", error);
     }
   };
+  
 
   // Add this function to handle logout
   const handleLogout = () => {

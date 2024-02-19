@@ -157,31 +157,37 @@ app.get("/api/awards/:awardId", async (req, res) => {
 
 // Endpoint to handle likes and dislikes
 app.post("/api/like", async (req, res) => {
-  const { userId, bookId, liked } = req.body; // Note: 'liked' is now a boolean indicating like or dislike
+  const { userId, bookId, liked } = req.body;
 
   try {
     const client = await pool.connect();
 
-    // Check if there's an existing like/dislike by the user for this book
-    const existingEntry = await client.query(
-      "SELECT * FROM user_book_likes WHERE user_id = $1 AND book_id = $2",
-      [userId, bookId]
-    );
+    // Upsert logic: Update if exists, else insert
+    const upsertQuery = `
+      INSERT INTO user_book_likes (user_id, book_id, liked, likedOn)
+      VALUES ($1, $2, $3, NOW())
+      ON CONFLICT (user_id, book_id)
+      DO UPDATE SET liked = EXCLUDED.liked, likedOn = NOW();
+    `;
+    await client.query(upsertQuery, [userId, bookId, liked]);
 
-    if (existingEntry.rows.length > 0) {
-      // Update the existing entry if user changes their like/dislike
-      await client.query(
-        "UPDATE user_book_likes SET liked = $1, likedOn = NOW() WHERE user_id = $2 AND book_id = $3",
-        [liked, userId, bookId]
-      );
-    } else {
-      // Insert new like/dislike
-      await client.query(
-        "INSERT INTO user_book_likes (user_id, book_id, liked, likedOn) VALUES ($1, $2, $3, NOW())",
-        [userId, bookId, liked]
-      );
-    }
-    res.json({ message: "Success" });
+    // Fetch updated counts
+    const countQuery = `
+      SELECT COUNT(*) FILTER (WHERE liked = true) AS like_count,
+             COUNT(*) FILTER (WHERE liked = false) AS dislike_count
+      FROM user_book_likes
+      WHERE book_id = $1
+      GROUP BY book_id;
+    `;
+    const countResult = await client.query(countQuery, [bookId]);
+    const counts = countResult.rows[0] || { like_count: 0, dislike_count: 0 };
+
+    res.json({
+      message: "Success",
+      likeCount: counts.like_count,
+      dislikeCount: counts.dislike_count,
+    });
+
     client.release();
   } catch (error) {
     console.error("Error processing like/dislike", error);

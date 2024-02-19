@@ -68,7 +68,7 @@ app.get("/api/tableName", async (req, res) => {
                COUNT(*) FILTER (WHERE liked = false) AS dislike_count
         FROM user_book_likes
         GROUP BY book_id
-    ) likes ON book_id = likes.book_id
+    ) likes ON tableName.book_id = likes.book_id
     WHERE role = 'winner' AND title_of_winning_book IS NOT NULL
     ORDER BY RANDOM()
     LIMIT 10;

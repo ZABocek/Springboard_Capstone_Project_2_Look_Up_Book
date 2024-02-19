@@ -132,7 +132,7 @@ const Homepage = () => {
                   <img
                     src={dislikeIconURL}
                     alt="Dislike"
-                    onClick={() => handleLike(book.bookdId, false)}
+                    onClick={() => handleLike(book.bookId, false)}
                     style={{ cursor: "pointer", height: "50px" }}
                   />
                 </td>

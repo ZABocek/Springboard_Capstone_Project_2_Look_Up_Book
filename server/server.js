@@ -59,7 +59,7 @@ app.get("/api/tableName", async (req, res) => {
 
     // SQL query to get 10 random books where role is 'winner' and title_of_winning_book is not null
     const queryText = `
-    SELECT book_id, title_of_winning_book, prize_genre, prize_year, verified, person_id,
+    SELECT tableName.book_id, title_of_winning_book, prize_genre, prize_year, verified, person_id,
            COALESCE(like_count, 0) AS like_count,
            COALESCE(dislike_count, 0) AS dislike_count
     FROM tableName

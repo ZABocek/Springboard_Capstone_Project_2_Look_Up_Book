@@ -160,25 +160,21 @@ app.post("/api/like", async (req, res) => {
     );
 
     if (existingEntry.rows.length > 0) {
+      // Update the existing entry if user changes their like/dislike
       // If the existing like/dislike is the same as the new one, return an error
       if (existingEntry.rows[0].liked === liked) {
         return res.status(400).json({ message: "Error, you cannot like or dislike a book more than once!" });
       }
-      // Update the existing entry if user changes their like/dislike
-      await client.query(
-        "UPDATE user_book_likes SET liked = $1, likedOn = NOW() WHERE user_id = $2 AND book_id = $3",
-        [liked, userId, bookId]
-      );
-    } else {
+      else {
       // Insert new like/dislike
       await client.query(
         "INSERT INTO user_book_likes (user_id, book_id, liked, likedOn) VALUES ($1, $2, $3, NOW())",
         [userId, bookId, liked]
       );
-    }
+    }}
     res.json({ message: "Success" });
-    client.release();
-  } catch (error) {
+    client.release();}
+  catch (error) {
     console.error("Error processing like/dislike", error);
     res.status(500).send("Error processing like/dislike");
   }

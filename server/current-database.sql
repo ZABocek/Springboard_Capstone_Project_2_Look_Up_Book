@@ -14416,6 +14416,7 @@ COPY public.tablename (person_id, full_name, given_name, last_name, gender, elit
 --
 
 COPY public.user_book_likes (like_id, user_id, book_id, likedon, liked) FROM stdin;
+27	22	236	2024-02-19	f
 \.
 
 
@@ -14424,12 +14425,12 @@ COPY public.user_book_likes (like_id, user_id, book_id, likedon, liked) FROM std
 --
 
 COPY public.users (id, username, email, hash) FROM stdin;
-1	charlie	Doggy@gmail.com	$2b$10$uI/.5N0x6.nAPalhWNcz4exjThD.Bmj4QGUOVpyHLAeR9AiJb7Q/O
-3	charliebaby	charliebaby@gmail.com	$2b$10$AlI11Rkf2Ld/QOuHn0pbduJVk3Z29NgONGIVqZ6edprqgUoh7tXbS
-5	mycrozee77	mycrozzee77@gmail.com	$2b$10$1mhDCbkGObFqumafccXj6.VTk112qGrdU6qANb3ikfSRjkOISZAl6
-6	Raymond	ray@gmail.com	$2b$10$AfH2wPrkJLdEcg/HYSZX5OHtzcfhbBx.hUWoigQNgmxLGDk5HDz3G
-7	mrknows	mrknows@gmail.com	$2b$10$2RrJ1Ivjy7Ec2WDmp1LgAufZ0ica8pIR2U9fSJ1Ud.cS0FAo8oURa
-8	billmurray	spikeyactor@gmail.com	$2b$10$hixpwZ8vHZdcIQ3wxkRX.OGx25H5qHg3rbDP9R3WxDtIp7Rw3mT4C
+20	bubba	bubbagump@gmail.com	$2b$10$RKfceerxfPxSlBgbxaxSYe6yGisp2dbRbKX8PtXOwrxtjM7dOUN6e
+21	bubbba	ikoo@gmail.com	$2b$10$oVYK9F8w2sgBsfk53biQy.N5CnG9znDIzlHDqfIu.BvCxqHL2SNIK
+22	lksjfd	lsjkfkaj@gmail.com	$2b$10$SEdUFtpJAGp8DsFd4Xm15.9w1RneRt8jYg3cOadQ1yQKjDaFNGDdi
+23	yumma	ksaifi@gmail.com	$2b$10$tJuMxV1BgUQZgvb.DxbBKeqkzLGN4e7QZvCH5gUUDaRdEOlA0TK3O
+24	walla	walla@gmail.com	$2b$10$Gpfhakf.VDDnVyqnKmPW5ubMGM4XrujoQNGsvyz7.iMFODMOAN/uW
+25	jugga	jugga@gmail.com	$2b$10$Z/Bw4jopLDFAM7dNDcQBN.XalEgH/zqmYUEhOTLZiprpiUOUr4hei
 \.
 
 
@@ -14437,14 +14438,14 @@ COPY public.users (id, username, email, hash) FROM stdin;
 -- Name: user_book_likes_like_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_book_likes_like_id_seq', 19, true);
+SELECT pg_catalog.setval('public.user_book_likes_like_id_seq', 28, true);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 8, true);
+SELECT pg_catalog.setval('public.users_id_seq', 25, true);
 
 
 --
@@ -14461,6 +14462,14 @@ ALTER TABLE ONLY public.tablename
 
 ALTER TABLE ONLY public.user_book_likes
     ADD CONSTRAINT user_book_likes_pkey PRIMARY KEY (like_id);
+
+
+--
+-- Name: user_book_likes user_book_likes_unique_user_book; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_book_likes
+    ADD CONSTRAINT user_book_likes_unique_user_book UNIQUE (user_id, book_id);
 
 
 --

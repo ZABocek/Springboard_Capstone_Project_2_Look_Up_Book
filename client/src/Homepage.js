@@ -50,13 +50,14 @@ const Homepage = () => {
       console.log("Like/dislike successfully processed", data);
   
       // Update local state with new counts
-      setSelectedBooks((currentBooks) =>
-        currentBooks.map((book) =>
+      // Update the state with the new counts
+      setSelectedBooks(currentBooks =>
+        currentBooks.map(book =>
           book.book_id === bookId
-            ? { ...book, like_count: data.likeCount, dislike_count: data.dislikeCount }
-            : book
-        )
-      );
+          ? { ...book, like_count: data.likes, dislike_count: data.dislikes }
+          : book
+          )
+          );
     } catch (error) {
       console.error("Error processing like/dislike:", error);
     }

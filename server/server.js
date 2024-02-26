@@ -172,22 +172,22 @@ app.post("/api/like", async (req, res) => {
     await client.query(upsertQuery, [userId, bookId, liked]);
 
     // Fetch updated counts
-    const countQuery = `
-      SELECT COUNT(*) FILTER (WHERE liked = true) AS like_count,
-             COUNT(*) FILTER (WHERE liked = false) AS dislike_count
-      FROM user_book_likes
-      WHERE book_id = $1
-      GROUP BY book_id;
+    // Inside your /api/like endpoint, after updating the like/dislike status
+    const countsQuery = `
+    SELECT
+    COUNT(*) FILTER (WHERE liked = true) AS likes,
+    COUNT(*) FILTER (WHERE liked = false) AS dislikes
+    FROM user_book_likes
+    WHERE book_id = $1
+    GROUP BY book_id;
     `;
-    const countResult = await client.query(countQuery, [bookId]);
-    const counts = countResult.rows[0] || { like_count: 0, dislike_count: 0 };
-
-    res.json({
-      message: "Success",
-      likeCount: counts.like_count,
-      dislikeCount: counts.dislike_count,
-    });
-
+    const countsResult = await client.query(countsQuery, [bookId]);
+    if (countsResult.rows.length > 0) {
+      const { likes, dislikes } = countsResult.rows[0];
+      res.json({ message: "Success", likes, dislikes });
+    } else {
+      res.json({ message: "Success", likes: 0, dislikes: 0 });
+    }
     client.release();
   } catch (error) {
     console.error("Error processing like/dislike", error);

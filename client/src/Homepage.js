@@ -34,7 +34,8 @@ const Homepage = () => {
   // Inside the Homepage component
   const handleLike = async (bookId, liked) => {
     const userId = localStorage.getItem("userId");
-  
+    console.log({ userId, bookId, liked }); // Add this line before making the fetch request
+
     try {
       const response = await fetch("http://localhost:5000/api/like", {
         method: "POST",

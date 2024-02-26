@@ -161,6 +161,7 @@ app.post("/api/like", async (req, res) => {
 
   try {
     const client = await pool.connect();
+    console.log({ userId, bookId, liked }); // Add this line before the query in /api/like endpoint
 
     // Upsert logic: Update if exists, else insert
     const upsertQuery = `

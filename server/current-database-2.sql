@@ -14416,7 +14416,6 @@ COPY public.tablename (person_id, full_name, given_name, last_name, gender, elit
 --
 
 COPY public.user_book_likes (like_id, user_id, book_id, likedon, liked) FROM stdin;
-27	22	236	2024-02-19	f
 \.
 
 
@@ -14425,12 +14424,6 @@ COPY public.user_book_likes (like_id, user_id, book_id, likedon, liked) FROM std
 --
 
 COPY public.users (id, username, email, hash) FROM stdin;
-20	bubba	bubbagump@gmail.com	$2b$10$RKfceerxfPxSlBgbxaxSYe6yGisp2dbRbKX8PtXOwrxtjM7dOUN6e
-21	bubbba	ikoo@gmail.com	$2b$10$oVYK9F8w2sgBsfk53biQy.N5CnG9znDIzlHDqfIu.BvCxqHL2SNIK
-22	lksjfd	lsjkfkaj@gmail.com	$2b$10$SEdUFtpJAGp8DsFd4Xm15.9w1RneRt8jYg3cOadQ1yQKjDaFNGDdi
-23	yumma	ksaifi@gmail.com	$2b$10$tJuMxV1BgUQZgvb.DxbBKeqkzLGN4e7QZvCH5gUUDaRdEOlA0TK3O
-24	walla	walla@gmail.com	$2b$10$Gpfhakf.VDDnVyqnKmPW5ubMGM4XrujoQNGsvyz7.iMFODMOAN/uW
-25	jugga	jugga@gmail.com	$2b$10$Z/Bw4jopLDFAM7dNDcQBN.XalEgH/zqmYUEhOTLZiprpiUOUr4hei
 \.
 
 

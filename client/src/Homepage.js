@@ -126,10 +126,9 @@ const Homepage = () => {
     <tr key={index}>
         <td>{book.title_of_winning_book}</td>
         <td>
-            <img src={likeIconURL} alt="Like" onClick={() => handleLike(book.bookId, true)}
-                 style={{ cursor: "pointer", marginRight: "10px", height: "50px" }} />
-            {book.like_count} {/* Display like count */}
-            <img src={dislikeIconURL} alt="Dislike" onClick={() => handleLike(book.bookId, false)}
+        // Example click handler for a like button
+        <img src={likeIconURL} alt="Like" onClick={() => { console.log(book.bookId); handleLike(book.bookId, true); }} />
+        <img src={dislikeIconURL} alt="Dislike" onClick={() => handleLike(book.bookId, false)}
                  style={{ cursor: "pointer", height: "50px" }} />
             {book.dislike_count} {/* Display dislike count */}
         </td>

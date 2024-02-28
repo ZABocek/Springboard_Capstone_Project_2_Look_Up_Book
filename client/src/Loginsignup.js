@@ -2,7 +2,7 @@ import './LoginSignup.css';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Other necessary imports
-function LoginSignup() {
+function LoginSignup({ setIsAuthenticated }) {
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
     const [registerEmail, setRegisterEmail] = useState('');
@@ -29,6 +29,7 @@ function LoginSignup() {
             if (data.token) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('userId', data.userId); // Set user ID after successful login
+                setIsAuthenticated(true);
                 navigate('/Homepage');
             } else {
                 // Handle login error
@@ -38,6 +39,7 @@ function LoginSignup() {
             console.error("Error during login:", error);
         }
     };
+    
     const onRegisterSubmit = async (event) => {
         event.preventDefault();
         const newUser = {

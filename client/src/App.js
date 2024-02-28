@@ -18,7 +18,7 @@ function App() {
             <Routes>
                 {/* If authenticated, navigate to Homepage, otherwise to LoginSignup */}
                 <Route path="/" element={isAuthenticated ? <Navigate replace to="/homepage" /> : <Navigate replace to="/login" />} />
-                <Route path="/login" element={<LoginSignup />} />
+                <Route path="/login" element={<LoginSignup setIsAuthenticated={setIsAuthenticated} />} />
                 <Route path="/homepage" element={<Homepage />} />
                 <Route path="/search-books" element={<SearchBooks />} />
                 <Route path="/search-awards" element={<SearchAwards />} />

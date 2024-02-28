@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginSignup from './LoginSignup';
-import Homepage from './Homepage'; // Ensure this component is correctly imported
-import SearchBooks from './search-books'; // Ensure this component is correctly imported
-import SearchAwards from './search-awards'; // Adjust the path as necessary
+import Homepage from './Homepage';
+import SearchBooks from './search-books';
+import SearchAwards from './search-awards';
+
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    // Placeholder function to check authentication status
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         setIsAuthenticated(!!token);
     }, []);
+
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Navigate replace to="/login" />} />
-                <Route path="/login" element={isAuthenticated ? <Homepage /> : <LoginSignup />} />
+                {/* If authenticated, navigate to Homepage, otherwise to LoginSignup */}
+                <Route path="/" element={isAuthenticated ? <Navigate replace to="/homepage" /> : <Navigate replace to="/login" />} />
+                <Route path="/login" element={<LoginSignup />} />
                 <Route path="/homepage" element={<Homepage />} />
                 <Route path="/search-books" element={<SearchBooks />} />
                 <Route path="/search-awards" element={<SearchAwards />} />
@@ -23,4 +26,5 @@ function App() {
         </Router>
     );
 }
+
 export default App;

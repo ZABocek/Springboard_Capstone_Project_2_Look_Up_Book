@@ -6,7 +6,6 @@ import dislikeIconURL from "./dislike_6933384.png";
 const Homepage = () => {
   const [selectedBooks, setSelectedBooks] = useState([]);
   const navigate = useNavigate(); // Initialize useNavigate
-
   useEffect(() => {
     async function fetchBooks() {
       try {
@@ -15,41 +14,33 @@ const Homepage = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         let books = await response.json();
-
         // Transform each book to rename book_id to bookId
         books = books.map((book) => ({
           ...book,
           bookId: book.book_id,
         }));
-
         setSelectedBooks(books);
       } catch (error) {
         console.error("Error fetching books:", error);
       }
     }
-
     fetchBooks();
   }, []);
-
   // Inside the Homepage component
   const handleLike = async (bookId, liked) => {
     const userId = localStorage.getItem("userId");
     console.log({ userId, bookId, liked }); // Add this line before making the fetch request
-
     try {
       const response = await fetch("http://localhost:5000/api/like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, bookId, liked }),
       });
-  
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-  
       const data = await response.json();
       console.log("Like/dislike successfully processed", data);
-  
       // Update local state with new counts
       // Update the state with the new counts
       setSelectedBooks(currentBooks =>
@@ -63,15 +54,12 @@ const Homepage = () => {
       console.error("Error processing like/dislike:", error);
     }
   };
-  
-
   // Add this function to handle logout
   const handleLogout = () => {
     // Here you should clear your authentication token or session
     localStorage.removeItem("token"); // For example, if you're using localStorage
     navigate("/login"); // Redirect to login page
   };
-
   return (
     <div className="homepage">
       <h1 className="welcome-message">Welcome to Look Up Book!</h1>
@@ -139,12 +127,10 @@ const Homepage = () => {
         <td>{book.person_id}</td>
     </tr>
 ))}
-
           </tbody>
         </table>
       </div>
     </div>
   );
 };
-
 export default Homepage;

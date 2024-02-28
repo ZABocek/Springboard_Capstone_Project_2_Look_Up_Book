@@ -4,16 +4,13 @@ import LoginSignup from './LoginSignup';
 import Homepage from './Homepage'; // Ensure this component is correctly imported
 import SearchBooks from './search-books'; // Ensure this component is correctly imported
 import SearchAwards from './search-awards'; // Adjust the path as necessary
-
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
     // Placeholder function to check authentication status
     useEffect(() => {
         const token = localStorage.getItem('token');
         setIsAuthenticated(!!token);
     }, []);
-
     return (
         <Router>
             <Routes>
@@ -26,5 +23,4 @@ function App() {
         </Router>
     );
 }
-
 export default App;

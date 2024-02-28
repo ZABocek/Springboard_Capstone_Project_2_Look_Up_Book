@@ -2,7 +2,6 @@ import './LoginSignup.css';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Other necessary imports
-
 function LoginSignup() {
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
@@ -10,9 +9,7 @@ function LoginSignup() {
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerName, setRegisterName] = useState('');
     const [isLogin, setIsLogin] = useState(true); // isLogin state defined here
-
     const navigate = useNavigate();
-
     const onLoginSubmit = async (event) => {
         event.preventDefault();
         // Assuming you have logic here to send credentials to your server
@@ -24,12 +21,10 @@ function LoginSignup() {
                 },
                 body: JSON.stringify({ email: loginEmail, password: loginPassword }), // Assuming you use email and password for login
             });
-    
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Server responded with ${response.status}: ${errorText}`);
             }
-    
             const data = await response.json();
             if (data.token) {
                 localStorage.setItem('token', data.token);
@@ -43,8 +38,6 @@ function LoginSignup() {
             console.error("Error during login:", error);
         }
     };
-    
-
     const onRegisterSubmit = async (event) => {
         event.preventDefault();
         const newUser = {
@@ -52,7 +45,6 @@ function LoginSignup() {
             email: registerEmail,
             password: registerPassword,
         };
-    
         try {
             const response = await fetch('http://localhost:5000/signup', {
                 method: 'POST',
@@ -61,12 +53,10 @@ function LoginSignup() {
                 },
                 body: JSON.stringify(newUser),
             });
-    
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Server responded with ${response.status}: ${errorText}`);
             }
-    
             const data = await response.json(); // Assuming the happy path returns JSON
             if (data.token) {
                 localStorage.setItem('token', data.token);
@@ -79,11 +69,7 @@ function LoginSignup() {
             console.error("Error registering new user:", error);
         }
     };
-    
-    
-
     const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup
-
     return (
         <div>
             <h1>{isLogin ? 'Please Log In' : 'Please Sign Up'}</h1>
@@ -104,7 +90,6 @@ function LoginSignup() {
                             onChange={(e) => setLoginPassword(e.target.value)}
                             autoComplete="current-password"
                         />
-
                     </>
                 ) : (
                     <>
@@ -128,7 +113,6 @@ function LoginSignup() {
                             onChange={(e) => setRegisterPassword(e.target.value)}
                             autoComplete="new-password" // Use "new-password" for registration forms
                         />
-
                     </>
                 )}
                 <button type="submit">{isLogin ? 'Log In' : 'Sign Up'}</button>
@@ -139,5 +123,4 @@ function LoginSignup() {
         </div>
     );
 }
-
 export default LoginSignup;

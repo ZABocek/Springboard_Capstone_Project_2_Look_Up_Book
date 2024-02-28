@@ -5,7 +5,6 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
-
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -17,17 +16,13 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
 });
-
 // JWT secret key
 const jwtSecret = process.env.JWT_SECRET;
-
 app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
-
   if (!username || !password || !email) {
     return res.status(400).json("Incorrect form submission");
   }
-
   const saltRounds = 10;
   try {
     const hash = await bcrypt.hash(password, saltRounds);
@@ -37,11 +32,9 @@ app.post("/signup", async (req, res) => {
       "INSERT INTO users (username, email, hash) VALUES ($1, $2, $3) RETURNING *",
       [username, email, hash]
     );
-
     const token = jwt.sign({ id: user.rows[0].id }, jwtSecret, {
       expiresIn: "2h",
     });
-
     // Include userId in the response
     res.json({ token, userId: user.rows[0].id }); // Modified line
     client.release();
@@ -52,11 +45,9 @@ app.post("/signup", async (req, res) => {
       .json({ message: "Error registering new user", error: err.message });
   }
 });
-
 app.get("/api/tableName", async (req, res) => {
   try {
     const client = await pool.connect();
-
     // SQL query to get 10 random books where role is 'winner' and title_of_winning_book is not null
     const queryText = `
     SELECT tableName.book_id, title_of_winning_book, prize_genre, prize_year, verified, person_id,
@@ -73,10 +64,7 @@ app.get("/api/tableName", async (req, res) => {
     ORDER BY RANDOM()
     LIMIT 10;
     `;
-
-
     const result = await client.query(queryText);
-
     res.json(result.rows);
     client.release();
   } catch (error) {
@@ -84,7 +72,6 @@ app.get("/api/tableName", async (req, res) => {
     res.status(500).send("Error fetching books");
   }
 });
-
 app.get("/api/authors", async (req, res) => {
   try {
     const client = await pool.connect();
@@ -98,7 +85,6 @@ app.get("/api/authors", async (req, res) => {
     res.status(500).send("Error fetching authors");
   }
 });
-
 app.get("/api/books/:authorId", async (req, res) => {
   const { authorId } = req.params;
   try {
@@ -117,7 +103,6 @@ app.get("/api/books/:authorId", async (req, res) => {
     res.status(500).send("Error fetching books");
   }
 });
-
 // Add this endpoint to server.js
 app.get("/api/awards", async (req, res) => {
   try {
@@ -136,7 +121,6 @@ app.get("/api/awards", async (req, res) => {
     res.status(500).send("Error fetching awards");
   }
 });
-
 app.get("/api/awards/:awardId", async (req, res) => {
   const { awardId } = req.params;
   try {
@@ -154,15 +138,12 @@ app.get("/api/awards/:awardId", async (req, res) => {
     res.status(500).send("Error fetching books");
   }
 });
-
 // Endpoint to handle likes and dislikes
 app.post("/api/like", async (req, res) => {
   const { userId, bookId, liked } = req.body;
-
   try {
     const client = await pool.connect();
     console.log({ userId, bookId, liked }); // Add this line before the query in /api/like endpoint
-
     // Upsert logic: Update if exists, else insert
     const upsertQuery = `
       INSERT INTO user_book_likes (user_id, book_id, liked, likedOn)
@@ -171,7 +152,6 @@ app.post("/api/like", async (req, res) => {
       DO UPDATE SET liked = EXCLUDED.liked, likedOn = NOW();
     `;
     await client.query(upsertQuery, [userId, bookId, liked]);
-
     // Fetch updated counts
     // Inside your /api/like endpoint, after updating the like/dislike status
     const countsQuery = `
@@ -195,7 +175,6 @@ app.post("/api/like", async (req, res) => {
     res.status(500).send("Error processing like/dislike");
   }
 });
-
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
 });

@@ -1,10 +1,6 @@
---
 -- PostgreSQL database dump
---
-
 -- Dumped from database version 15.3
 -- Dumped by pg_dump version 16.1
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -15,15 +11,9 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
 SET default_tablespace = '';
-
 SET default_table_access_method = heap;
-
---
 -- Name: tablename; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.tablename (
     person_id integer,
     full_name character varying(512),
@@ -46,14 +36,8 @@ CREATE TABLE public.tablename (
     book_id integer,
     award_id integer
 );
-
-
 ALTER TABLE public.tablename OWNER TO postgres;
-
---
 -- Name: user_book_likes; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.user_book_likes (
     like_id integer NOT NULL,
     user_id integer NOT NULL,
@@ -61,14 +45,8 @@ CREATE TABLE public.user_book_likes (
     likedon date NOT NULL,
     liked boolean
 );
-
-
 ALTER TABLE public.user_book_likes OWNER TO postgres;
-
---
 -- Name: user_book_likes_like_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
 CREATE SEQUENCE public.user_book_likes_like_id_seq
     AS integer
     START WITH 1
@@ -76,35 +54,18 @@ CREATE SEQUENCE public.user_book_likes_like_id_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-
-
 ALTER SEQUENCE public.user_book_likes_like_id_seq OWNER TO postgres;
-
---
 -- Name: user_book_likes_like_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
 ALTER SEQUENCE public.user_book_likes_like_id_seq OWNED BY public.user_book_likes.like_id;
-
-
---
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.users (
     id integer NOT NULL,
     username character varying(50) NOT NULL,
     email character varying(100) NOT NULL,
     hash character varying(255) NOT NULL
 );
-
-
 ALTER TABLE public.users OWNER TO postgres;
-
---
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
 CREATE SEQUENCE public.users_id_seq
     AS integer
     START WITH 1
@@ -112,35 +73,14 @@ CREATE SEQUENCE public.users_id_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-
-
 ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
-
---
 -- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
-
-
---
 -- Name: user_book_likes like_id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes ALTER COLUMN like_id SET DEFAULT nextval('public.user_book_likes_like_id_seq'::regclass);
-
-
---
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
-
-
---
 -- Data for Name: tablename; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
 COPY public.tablename (person_id, full_name, given_name, last_name, gender, elite_institution, graduate_degree, mfa_degree, role, prize_institution, prize_name, prize_year, prize_genre, prize_type, prize_amount, title_of_winning_book, verified, author_id, book_id, award_id) FROM stdin;
 1145	John Kennedy Toole	John Kennedy	Toole	male	Columbia University	graduate	\N	winner	Columbia University	Pulitzer Prize	1981	prose	book	15000	A Confederacy Of Dunces	t	511	7	15
 935	Isaac Bashevis Singer	Issac Bashevis	Singer	male	\N	\N	\N	winner	National Book Foundation	National Book Award	1974	prose	book	10000	A Crown Of Feathers And Other Stories	t	458	8	14
@@ -14409,103 +14349,38 @@ COPY public.tablename (person_id, full_name, given_name, last_name, gender, elit
 1550	Martha Zweig	Martha	Zweig	female	\N	graduate	Warren Wilson College	winner	Whiting Foundation	Whiting Award	1999	no genre	career	50000	\N	t	\N	\N	\N
 1550	Martha Zweig	Martha	Zweig	female	\N	graduate	Warren Wilson College	winner	Whiting Foundation	Whiting Award	1999	no genre	career	50000	\N	t	\N	\N	\N
 \.
-
-
---
 -- Data for Name: user_book_likes; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
 COPY public.user_book_likes (like_id, user_id, book_id, likedon, liked) FROM stdin;
 \.
-
-
---
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
 COPY public.users (id, username, email, hash) FROM stdin;
 \.
-
-
---
 -- Name: user_book_likes_like_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
 SELECT pg_catalog.setval('public.user_book_likes_like_id_seq', 28, true);
-
-
---
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
 SELECT pg_catalog.setval('public.users_id_seq', 25, true);
-
-
---
 -- Name: tablename book_id_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.tablename
     ADD CONSTRAINT book_id_unique UNIQUE (book_id);
-
-
---
 -- Name: user_book_likes user_book_likes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes
     ADD CONSTRAINT user_book_likes_pkey PRIMARY KEY (like_id);
-
-
---
 -- Name: user_book_likes user_book_likes_unique_user_book; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes
     ADD CONSTRAINT user_book_likes_unique_user_book UNIQUE (user_id, book_id);
-
-
---
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_email_key UNIQUE (email);
-
-
---
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-
-
---
 -- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_username_key UNIQUE (username);
-
-
---
 -- Name: user_book_likes fk_book; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes
     ADD CONSTRAINT fk_book FOREIGN KEY (book_id) REFERENCES public.tablename(book_id);
-
-
---
 -- Name: user_book_likes fk_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes
     ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
 -- PostgreSQL database dump complete
---
-

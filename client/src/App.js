@@ -4,15 +4,12 @@ import LoginSignup from './LoginSignup';
 import Homepage from './Homepage';
 import SearchBooks from './search-books';
 import SearchAwards from './search-awards';
-
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
     useEffect(() => {
         const token = localStorage.getItem('token');
         setIsAuthenticated(!!token);
     }, []);
-
     return (
         <Router>
             <Routes>
@@ -26,5 +23,4 @@ function App() {
         </Router>
     );
 }
-
 export default App;

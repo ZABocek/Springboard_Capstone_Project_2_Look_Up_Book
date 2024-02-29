@@ -45,6 +45,33 @@ app.post("/signup", async (req, res) => {
       .json({ message: "Error registering new user", error: err.message });
   }
 });
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json("Incorrect form submission");
+  }
+  try {
+    const client = await pool.connect();
+    const user = await client.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (user.rows.length) {
+      const isValid = await bcrypt.compare(password, user.rows[0].hash);
+      if (isValid) {
+        const token = jwt.sign({ id: user.rows[0].id }, jwtSecret, {
+          expiresIn: "2h",
+        });
+        res.json({ token, userId: user.rows[0].id });
+      } else {
+        res.status(400).json("Wrong credentials");
+      }
+    } else {
+      res.status(400).json("User not found");
+    }
+    client.release();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json("Error logging in");
+  }
+});
 app.get("/api/tableName", async (req, res) => {
   try {
     const client = await pool.connect();

@@ -30,7 +30,7 @@ function LoginSignup({ setIsAuthenticated }) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('userId', data.userId); // Set user ID after successful login
                 setIsAuthenticated(true);
-                navigate('/Homepage');
+                navigate('/homepage');
             } else {
                 // Handle login error
                 console.error("Login error:", data.message);
@@ -64,7 +64,7 @@ function LoginSignup({ setIsAuthenticated }) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('userId', data.userId); // Correctly placed here
                 setIsAuthenticated(true);
-                navigate('/Homepage');
+                navigate('/homepage');
             } else {
                 console.error("Registration error:", data.message);
             }

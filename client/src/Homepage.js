@@ -45,11 +45,11 @@ const Homepage = () => {
       // Update the state with the new counts
       setSelectedBooks(currentBooks =>
         currentBooks.map(book =>
-          book.book_id === bookId
+          book.bookId === bookId
           ? { ...book, like_count: data.likes, dislike_count: data.dislikes }
           : book
-          )
-          );
+        )
+      );      
     } catch (error) {
       console.error("Error processing like/dislike:", error);
     }

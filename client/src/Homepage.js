@@ -29,7 +29,6 @@ const Homepage = () => {
   // Inside the Homepage component
   const handleLike = async (bookId, liked) => {
     const userId = localStorage.getItem("userId");
-    console.log({ userId, bookId, liked }); // Add this line before making the fetch request
     try {
       const response = await fetch("http://localhost:5000/api/like", {
         method: "POST",
@@ -40,16 +39,17 @@ const Homepage = () => {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      console.log("Like/dislike successfully processed", data);
+      console.log("Like/dislike successfully processed", data); // Confirming data received
+      console.log({ bookId, likes: data.likes, dislikes: data.dislikes }); // Specific line to add
+
       // Update local state with new counts
-      // Update the state with the new counts
       setSelectedBooks(currentBooks =>
         currentBooks.map(book =>
           book.bookId === bookId
-          ? { ...book, like_count: data.likes, dislike_count: data.dislikes }
-          : book
+            ? { ...book, like_count: data.likes, dislike_count: data.dislikes }
+            : book
         )
-      );      
+      );
     } catch (error) {
       console.error("Error processing like/dislike:", error);
     }

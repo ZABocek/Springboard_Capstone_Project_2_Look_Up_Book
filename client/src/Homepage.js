@@ -49,7 +49,7 @@ const Homepage = () => {
             ? { ...book, like_count: data.likes, dislike_count: data.dislikes }
             : book
         )
-      );
+      );      
     } catch (error) {
       console.error("Error processing like/dislike:", error);
     }

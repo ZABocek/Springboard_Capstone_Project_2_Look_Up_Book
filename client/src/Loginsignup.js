@@ -12,14 +12,13 @@ function LoginSignup({ setIsAuthenticated }) {
     const navigate = useNavigate();
     const onLoginSubmit = async (event) => {
         event.preventDefault();
-        // Assuming you have logic here to send credentials to your server
         try {
-            const response = await fetch('http://localhost:5000/login', { // Change to your actual login endpoint
+            const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email: loginEmail, password: loginPassword }), // Assuming you use email and password for login
+                body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
             });
             if (!response.ok) {
                 const errorText = await response.text();
@@ -28,17 +27,16 @@ function LoginSignup({ setIsAuthenticated }) {
             const data = await response.json();
             if (data.token) {
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('userId', data.userId); // Set user ID after successful login
+                localStorage.setItem('userId', data.userId);
                 setIsAuthenticated(true);
                 navigate('/homepage');
             } else {
-                // Handle login error
                 console.error("Login error:", data.message);
             }
         } catch (error) {
-            console.error("Error during login:", error);
+            console.error("Error during login:", error.message);
         }
-    };
+    };    
     
     const onRegisterSubmit = async (event) => {
         event.preventDefault();

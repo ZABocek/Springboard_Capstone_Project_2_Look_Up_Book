@@ -199,6 +199,36 @@ app.post("/api/like", async (req, res) => {
   }
 });
 
+app.get("/api/user/preference/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const client = await pool.connect();
+    const result = await client.query("SELECT reading_preference, favorite_genre FROM users WHERE id = $1", [userId]);
+    client.release();
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching user preferences:", error);
+    res.status(500).send("Error fetching user preferences");
+  }
+});
+
+app.post("/api/user/preference/update", async (req, res) => {
+  const { userId, readingPreference, favoriteGenre } = req.body;
+  try {
+    const client = await pool.connect();
+    await client.query("UPDATE users SET reading_preference = $1, favorite_genre = $2 WHERE id = $3", [readingPreference, favoriteGenre, userId]);
+    client.release();
+    res.json({ message: "User preferences updated successfully" });
+  } catch (error) {
+    console.error("Error updating user preferences:", error);
+    res.status(500).send("Error updating user preferences");
+  }
+});
+
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
 });

@@ -70,14 +70,6 @@ function LoginSignup({ setIsAuthenticated }) {
             console.error("Error registering new user:", error);
         }
     };
-    const onLogout = () => {
-        // Clear authentication token from local storage
-        localStorage.removeItem('token');
-        // Set isAuthenticated to false
-        setIsAuthenticated(false);
-        // Redirect to login page
-        navigate('/login');
-    };
     const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup
     return (
         <div>

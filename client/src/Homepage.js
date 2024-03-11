@@ -39,9 +39,6 @@ const Homepage = () => {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      console.log("Like/dislike successfully processed", data); // Confirming data received
-      console.log({ bookId, likes: data.likes, dislikes: data.dislikes }); // Specific line to add
-
       // Update local state with new counts
       setSelectedBooks(currentBooks =>
         currentBooks.map(book =>
@@ -49,11 +46,12 @@ const Homepage = () => {
             ? { ...book, like_count: data.likes, dislike_count: data.dislikes }
             : book
         )
-      );      
+      );
     } catch (error) {
       console.error("Error processing like/dislike:", error);
     }
   };
+  
   // Add this function to handle logout
   const handleLogout = () => {
     // Here you should clear your authentication token or session
@@ -111,19 +109,20 @@ const Homepage = () => {
           </thead>
           <tbody>
           {selectedBooks.map((book, index) => (
-    <tr key={index}>
-        <td>{book.title_of_winning_book}</td>
-        <td>
-          <img src={likeIconURL} alt="Like" onClick={() => handleLike(book.bookId, true)} style={{ cursor: "pointer", marginRight: "10px", height: "50px" }} />
-          <img src={dislikeIconURL} alt="Dislike" onClick={() => handleLike(book.bookId, false)} style={{ cursor: "pointer", height: "50px" }} />
-
-        </td>
-        <td>{book.prize_genre}</td>
-        <td>{book.prize_year}</td>
-        <td>{book.verified ? "True" : "False"}</td>
-        <td>{book.person_id}</td>
-    </tr>
+  <tr key={index}>
+      <td>{book.title_of_winning_book}</td>
+      <td>
+        <img src={likeIconURL} alt="Like" onClick={() => handleLike(book.bookId, true)} style={{ cursor: "pointer", marginRight: "10px", height: "50px" }} />
+        {book.like_count} Likes / {book.dislike_count} Dislikes
+        <img src={dislikeIconURL} alt="Dislike" onClick={() => handleLike(book.bookId, false)} style={{ cursor: "pointer", height: "50px", marginLeft: "10px" }} />
+      </td>
+      <td>{book.prize_genre}</td>
+      <td>{book.prize_year}</td>
+      <td>{book.verified ? "True" : "False"}</td>
+      <td>{book.person_id}</td>
+  </tr>
 ))}
+
           </tbody>
         </table>
       </div>

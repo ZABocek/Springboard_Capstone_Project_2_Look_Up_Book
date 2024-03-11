@@ -170,7 +170,6 @@ app.post("/api/like", async (req, res) => {
   const { userId, bookId, liked } = req.body;
   try {
     const client = await pool.connect();
-    console.log({ userId, bookId, liked }); // Add this line before the query in /api/like endpoint
     // Upsert logic: Update if exists, else insert
     const upsertQuery = `
       INSERT INTO user_book_likes (user_id, book_id, liked, likedOn)
@@ -179,29 +178,25 @@ app.post("/api/like", async (req, res) => {
       DO UPDATE SET liked = EXCLUDED.liked, likedOn = NOW();
     `;
     await client.query(upsertQuery, [userId, bookId, liked]);
-    // Fetch updated counts
-    // Inside your /api/like endpoint, after updating the like/dislike status
+    // Fetch updated like/dislike counts
     const countsQuery = `
-    SELECT
-    COUNT(*) FILTER (WHERE liked = true) AS likes,
-    COUNT(*) FILTER (WHERE liked = false) AS dislikes
-    FROM user_book_likes
-    WHERE book_id = $1
-    GROUP BY book_id;
+      SELECT
+        SUM(CASE WHEN liked THEN 1 ELSE 0 END) AS likes,
+        SUM(CASE WHEN NOT liked THEN 1 ELSE 0 END) AS dislikes
+      FROM user_book_likes
+      WHERE book_id = $1
+      GROUP BY book_id;
     `;
     const countsResult = await client.query(countsQuery, [bookId]);
-    if (countsResult.rows.length > 0) {
-      const { likes, dislikes } = countsResult.rows[0];
-      res.json({ message: "Success", likes, dislikes });
-    } else {
-      res.json({ message: "Success", likes: 0, dislikes: 0 });
-    }
+    const { likes, dislikes } = countsResult.rows.length > 0 ? countsResult.rows[0] : { likes: 0, dislikes: 0 };
+    res.json({ message: "Success", likes, dislikes });
     client.release();
   } catch (error) {
     console.error("Error processing like/dislike", error);
     res.status(500).send("Error processing like/dislike");
   }
 });
+
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
 });

@@ -19,15 +19,20 @@ const Homepage = () => {
           ...book,
           bookId: book.book_id,
         }));
+        console.log(books);
         setSelectedBooks(books);
       } catch (error) {
         console.error("Error fetching books:", error);
       }
     }
     fetchBooks();
-  }, []);
+  }, []);  
   // Inside the Homepage component
   const handleLike = async (bookId, liked) => {
+    if (bookId == null) {
+      console.error("bookId is null, aborting the like/dislike action");
+      return;
+    }  
     const userId = localStorage.getItem("userId");
     console.log("Sending like/dislike action:", { userId, bookId, liked }); // Add this line
   

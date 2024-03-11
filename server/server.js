@@ -168,6 +168,8 @@ app.get("/api/awards/:awardId", async (req, res) => {
 // Endpoint to handle likes and dislikes
 app.post("/api/like", async (req, res) => {
   const { userId, bookId, liked } = req.body;
+  console.log("Received like/dislike request:", { userId, bookId, liked }); // Add this line
+
   try {
     const client = await pool.connect();
     // Upsert logic: Update if exists, else insert

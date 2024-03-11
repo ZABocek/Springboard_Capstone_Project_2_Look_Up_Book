@@ -29,16 +29,21 @@ const Homepage = () => {
   // Inside the Homepage component
   const handleLike = async (bookId, liked) => {
     const userId = localStorage.getItem("userId");
+    console.log("Sending like/dislike action:", { userId, bookId, liked }); // Add this line
+  
     try {
       const response = await fetch("http://localhost:5000/api/like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, bookId, liked }),
       });
+  
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error(`Network response was not ok: ${response.statusText}`);
       }
+      
       const data = await response.json();
+      console.log("Received response for like/dislike action:", data); // Add this line  
       // Update local state with new counts
       setSelectedBooks(currentBooks =>
         currentBooks.map(book =>

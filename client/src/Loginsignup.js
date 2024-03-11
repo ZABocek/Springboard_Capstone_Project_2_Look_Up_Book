@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Other necessary imports
 function LoginSignup({ setIsAuthenticated }) {
-    const [loginEmail, setLoginEmail] = useState('');
+    const [loginName, setLoginName] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
     const [registerEmail, setRegisterEmail] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
@@ -18,7 +18,7 @@ function LoginSignup({ setIsAuthenticated }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
+                body: JSON.stringify({ username: loginName.trim(), password: loginPassword }),
             });
             if (!response.ok) {
                 const errorText = await response.text();
@@ -88,8 +88,8 @@ function LoginSignup({ setIsAuthenticated }) {
                         <input
                             type="text"
                             placeholder="Username"
-                            value={loginEmail}
-                            onChange={(e) => setLoginEmail(e.target.value)}
+                            value={loginName}
+                            onChange={(e) => setLoginName(e.target.value)}
                             autoComplete="current-username"
                         />
                         <input

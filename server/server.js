@@ -46,13 +46,13 @@ app.post("/signup", async (req, res) => {
   }
 });
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
+  const { username, password } = req.body;
+  if (!username || !password) {
     return res.status(400).json("Incorrect form submission");
   }
   try {
     const client = await pool.connect();
-    const user = await client.query("SELECT * FROM users WHERE email = $1", [email]);
+    const user = await client.query("SELECT * FROM users WHERE username = $1", [username]);
     if (user.rows.length) {
       const isValid = await bcrypt.compare(password, user.rows[0].hash);
       if (isValid) {

@@ -117,7 +117,9 @@ CREATE TABLE public.users (
     id integer NOT NULL,
     username character varying(50) NOT NULL,
     email character varying(100) NOT NULL,
-    hash character varying(255) NOT NULL
+    hash character varying(255) NOT NULL,
+    reading_preference character varying(255),
+    favorite_genre character varying(255)
 );
 
 
@@ -14467,12 +14469,13 @@ COPY public.user_book_likes (like_id, user_id, book_id, likedon, liked) FROM std
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.users (id, username, email, hash) FROM stdin;
-39	bubba	bubba@gmail.com	$2b$10$TcydZwau6kmwAJuxrYtBK.YkmgiPK4nZ/u1FjPXVdeJa44nypDhv2
-40	doobie	doobie@gmail.com	$2b$10$IxEms64HMEq8zFTypIrxieK.uUMfPWlEboMtUwPjOUvSuO6qTk282
-41	yoga	yoga@gmail.com	$2b$10$rwAUpy5HxuDlrPYbyy3qdeWJsmJblRaZkhB.d3wrB/Bx1fpQGtxHu
-42	boogie	boogie@gmail.com	$2b$10$T4mUtUrim8CfEiPzBF/u.ukdVKu3Giaek.NvDlqI/aEq8OEQSP8sC
-43	buster	buster@gmail.com	$2b$10$QvIJI7T8Zn/v4aJ6GQ52i.OlIx4BbLs1YxSUiLfsSgrnEIBQWl2jG
+COPY public.users (id, username, email, hash, reading_preference, favorite_genre) FROM stdin;
+39	bubba	bubba@gmail.com	$2b$10$TcydZwau6kmwAJuxrYtBK.YkmgiPK4nZ/u1FjPXVdeJa44nypDhv2	\N	\N
+40	doobie	doobie@gmail.com	$2b$10$IxEms64HMEq8zFTypIrxieK.uUMfPWlEboMtUwPjOUvSuO6qTk282	\N	\N
+41	yoga	yoga@gmail.com	$2b$10$rwAUpy5HxuDlrPYbyy3qdeWJsmJblRaZkhB.d3wrB/Bx1fpQGtxHu	\N	\N
+42	boogie	boogie@gmail.com	$2b$10$T4mUtUrim8CfEiPzBF/u.ukdVKu3Giaek.NvDlqI/aEq8OEQSP8sC	\N	\N
+43	buster	buster@gmail.com	$2b$10$QvIJI7T8Zn/v4aJ6GQ52i.OlIx4BbLs1YxSUiLfsSgrnEIBQWl2jG	\N	\N
+44	jambo	jambo@gmail.com	$2b$10$EkHZ1S8aQCX1kl7SphtXn.TdDzm6CqvmwV4TlUjAGYVcYMjuUcpL.	\N	\N
 \.
 
 
@@ -14494,7 +14497,7 @@ SELECT pg_catalog.setval('public.user_book_likes_like_id_seq', 74, true);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 43, true);
+SELECT pg_catalog.setval('public.users_id_seq', 44, true);
 
 
 --

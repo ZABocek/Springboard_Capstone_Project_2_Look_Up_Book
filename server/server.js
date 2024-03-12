@@ -203,7 +203,8 @@ app.get("/api/user/preference/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
     const client = await pool.connect();
-    const result = await client.query("SELECT reading_preference, favorite_genre FROM users WHERE id = $1", [userId]);
+    // Include username in the SELECT query
+    const result = await client.query("SELECT username, reading_preference, favorite_genre FROM users WHERE id = $1", [userId]);
     client.release();
     if (result.rows.length > 0) {
       res.json(result.rows[0]);

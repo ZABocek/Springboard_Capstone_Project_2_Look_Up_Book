@@ -11,13 +11,15 @@ function Profile({ userId }) {
       const response = await fetch(`http://localhost:5000/api/user/preference/${userId}`);
       if (response.ok) {
         const data = await response.json();
-        setReadingPreference(data.reading_preference);
-        setFavoriteGenre(data.favorite_genre);
+        setUsername(data.username || 'User');
+        setReadingPreference(data.reading_preference || '');
+        setFavoriteGenre(data.favorite_genre || '');
       }
     };
-
+  
     fetchPreferences();
   }, [userId]);
+  
 
   // Update user preferences
   const updatePreferences = async () => {

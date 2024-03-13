@@ -39,6 +39,8 @@ function AddDbBook({ userId }) {
         </select>
         <button type="submit">Add Book to Profile</button>
       </form>
+      <button onClick={() => navigate('/Homepage')}>Back to Homepage</button>
+      <button onClick={() => navigate('/Profile')}>Proceed to Profile</button>
     </div>
   );
 }

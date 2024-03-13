@@ -96,10 +96,9 @@ function Profile({ userId }) {
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
-  );
-
+        </table>
+      </div>
+    <button onClick={() => navigate('/Homepage')}>Back to Homepage</button>
     </div>
   );
 }

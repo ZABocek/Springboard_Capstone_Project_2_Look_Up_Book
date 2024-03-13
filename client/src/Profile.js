@@ -52,6 +52,11 @@ function Profile({ userId }) {
           {/* Populate with common book genres */}
           <option value="fantasy">Fantasy</option>
           <option value="sci-fi">Sci-Fi</option>
+          <option value="nonfiction">Nonfiction</option>
+          <option value="historical">Historical</option>
+          <option value="romance">Romance</option>
+          <option value="mystery">Mystery</option>
+          <option value="adventure">Adventure</option>
           {/* Add more options as needed */}
         </select>
       </div>

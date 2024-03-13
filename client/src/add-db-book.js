@@ -13,20 +13,20 @@ function AddDbBook({ userId }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // Assuming you have an endpoint to handle adding a book to the profile
-    const response = await fetch('http://localhost:5000/api/add-book-to-profile', {
+    // Use the new endpoint to handle adding a book to the profile
+    const response = await fetch('http://localhost:5000/api/user/add-book', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, bookId: selectedBookId }),
     });
-
+  
     if (response.ok) {
       alert('Book added to profile successfully!');
     } else {
       alert('Failed to add book to profile.');
     }
   };
-
+  
   return (
     <div>
       <h2>Welcome, User!</h2>

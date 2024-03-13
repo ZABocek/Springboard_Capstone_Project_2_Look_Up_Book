@@ -248,6 +248,20 @@ app.get("/api/books-for-profile", async (req, res) => {
   }
 });
 
+app.post("/api/user/add-book", async (req, res) => {
+  const { userId, bookId } = req.body;
+  try {
+    const client = await pool.connect();
+    const queryText = "INSERT INTO user_preferred_books (user_id, book_id) VALUES ($1, $2)";
+    await client.query(queryText, [userId, bookId]);
+    client.release();
+    res.json({ message: "Book added to user's profile successfully" });
+  } catch (error) {
+    console.error("Error adding book to profile:", error);
+    res.status(500).send("Error adding book to profile");
+  }
+});
+
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
 });

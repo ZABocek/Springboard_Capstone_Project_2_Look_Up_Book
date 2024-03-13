@@ -95,9 +95,6 @@ const Homepage = () => {
             <a href="/search-awards">Search Books by Awards</a>
           </li>
           <li>
-            <a href="/delete-book">Delete Book from Profile</a>
-          </li>
-          <li>
             <a href="#" onClick={handleLogout}>
               Logout
             </a>

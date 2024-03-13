@@ -230,6 +230,24 @@ app.post("/api/user/preference/update", async (req, res) => {
   }
 });
 
+app.get("/api/books-for-profile", async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const queryText = `
+      SELECT DISTINCT ON (title_of_winning_book) book_id, title_of_winning_book, full_name
+      FROM tablename
+      WHERE role = 'winner' AND prize_type = 'book' AND title_of_winning_book IS NOT NULL
+      ORDER BY title_of_winning_book, full_name;
+    `;
+    const result = await client.query(queryText);
+    res.json(result.rows);
+    client.release();
+  } catch (error) {
+    console.error("Error fetching books for profile:", error);
+    res.status(500).send("Error fetching books");
+  }
+});
+
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
 });

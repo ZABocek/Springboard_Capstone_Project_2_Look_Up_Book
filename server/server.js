@@ -248,6 +248,26 @@ app.get("/api/books-for-profile", async (req, res) => {
   }
 });
 
+app.get("/api/user/:userId/preferred-books", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const client = await pool.connect();
+    const queryText = `
+      SELECT u.book_id, t.title_of_winning_book, t.full_name, t.prize_name, t.prize_year
+      FROM user_preferred_books u
+      JOIN tablename t ON u.book_id = t.book_id
+      WHERE u.user_id = $1
+      ORDER BY t.prize_year, t.full_name, t.title_of_winning_book;
+    `;
+    const result = await client.query(queryText, [userId]);
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching user's preferred books:", error);
+    res.status(500).send("Error fetching user's preferred books");
+  }
+});
+
 app.post("/api/user/add-book", async (req, res) => {
   const { userId, bookId } = req.body;
   try {

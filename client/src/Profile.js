@@ -4,6 +4,7 @@ function Profile({ userId }) {
   const [username, setUsername] = useState('');
   const [readingPreference, setReadingPreference] = useState('');
   const [favoriteGenre, setFavoriteGenre] = useState('');
+  const [preferredBooks, setPreferredBooks] = useState([]);
 
   // Fetch user preferences
   useEffect(() => {
@@ -36,6 +37,19 @@ function Profile({ userId }) {
     }
   };
 
+  useEffect(() => {
+    const fetchPreferredBooks = async () => {
+      const response = await fetch(`http://localhost:5000/api/user/${userId}/preferred-books`);
+      if (response.ok) {
+        const data = await response.json();
+        setPreferredBooks(data);
+      }
+    };
+
+    fetchPreferredBooks();
+  }, [userId]); // Add this line to the dependencies array if it's not already there
+
+
   return (
     <div>
       <h2>Welcome, {username}!</h2>
@@ -61,6 +75,31 @@ function Profile({ userId }) {
         </select>
       </div>
       <button onClick={updatePreferences}>Update Preferences</button>
+      <div>
+      <h3>Your Preferred Books</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Prize Name</th>
+            <th>Prize Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          {preferredBooks.map((book, index) => (
+            <tr key={index}>
+              <td>{book.title_of_winning_book}</td>
+              <td>{book.full_name}</td>
+              <td>{book.prize_name}</td>
+              <td>{book.prize_year}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
     </div>
   );
 }

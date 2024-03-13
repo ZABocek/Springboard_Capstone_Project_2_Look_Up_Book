@@ -1,10 +1,6 @@
---
 -- PostgreSQL database dump
---
-
 -- Dumped from database version 15.3
 -- Dumped by pg_dump version 16.1
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -15,15 +11,9 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
 SET default_tablespace = '';
-
 SET default_table_access_method = heap;
-
---
 -- Name: tablename; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.tablename (
     person_id integer,
     full_name character varying(512),
@@ -46,14 +36,8 @@ CREATE TABLE public.tablename (
     book_id integer NOT NULL,
     award_id integer
 );
-
-
 ALTER TABLE public.tablename OWNER TO postgres;
-
---
 -- Name: tablename_book_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
 CREATE SEQUENCE public.tablename_book_id_seq
     AS integer
     START WITH 1
@@ -61,21 +45,10 @@ CREATE SEQUENCE public.tablename_book_id_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-
-
 ALTER SEQUENCE public.tablename_book_id_seq OWNER TO postgres;
-
---
 -- Name: tablename_book_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
 ALTER SEQUENCE public.tablename_book_id_seq OWNED BY public.tablename.book_id;
-
-
---
 -- Name: user_book_likes; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.user_book_likes (
     like_id integer NOT NULL,
     user_id integer NOT NULL,
@@ -83,14 +56,8 @@ CREATE TABLE public.user_book_likes (
     likedon date NOT NULL,
     liked boolean
 );
-
-
 ALTER TABLE public.user_book_likes OWNER TO postgres;
-
---
 -- Name: user_book_likes_like_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
 CREATE SEQUENCE public.user_book_likes_like_id_seq
     AS integer
     START WITH 1
@@ -98,21 +65,10 @@ CREATE SEQUENCE public.user_book_likes_like_id_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-
-
 ALTER SEQUENCE public.user_book_likes_like_id_seq OWNER TO postgres;
-
---
 -- Name: user_book_likes_like_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
 ALTER SEQUENCE public.user_book_likes_like_id_seq OWNED BY public.user_book_likes.like_id;
-
-
---
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.users (
     id integer NOT NULL,
     username character varying(50) NOT NULL,
@@ -121,14 +77,8 @@ CREATE TABLE public.users (
     reading_preference character varying(255),
     favorite_genre character varying(255)
 );
-
-
 ALTER TABLE public.users OWNER TO postgres;
-
---
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
 CREATE SEQUENCE public.users_id_seq
     AS integer
     START WITH 1
@@ -136,42 +86,16 @@ CREATE SEQUENCE public.users_id_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-
-
 ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
-
---
 -- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
-
-
---
 -- Name: tablename book_id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.tablename ALTER COLUMN book_id SET DEFAULT nextval('public.tablename_book_id_seq'::regclass);
-
-
---
 -- Name: user_book_likes like_id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes ALTER COLUMN like_id SET DEFAULT nextval('public.user_book_likes_like_id_seq'::regclass);
-
-
---
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
-
-
---
 -- Data for Name: tablename; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
 COPY public.tablename (person_id, full_name, given_name, last_name, gender, elite_institution, graduate_degree, mfa_degree, role, prize_institution, prize_name, prize_year, prize_genre, prize_type, prize_amount, title_of_winning_book, verified, author_id, book_id, award_id) FROM stdin;
 264	Booth Tarkington	Booth	Tarkington	male	Princeton University	\N	\N	winner	Columbia University	Pulitzer Prize	1922	prose	book	15000	Alice Adams	t	498	782	15
 328	Carolyn Kizer	Carolyn	Kizer	female	Columbia University	graduate	\N	winner	Columbia University	Pulitzer Prize	1985	poetry	book	15000	Yin	t	252	459	15
@@ -14440,12 +14364,7 @@ COPY public.tablename (person_id, full_name, given_name, last_name, gender, elit
 1550	Martha Zweig	Martha	Zweig	female	\N	graduate	Warren Wilson College	winner	Whiting Foundation	Whiting Award	1999	no genre	career	50000	\N	f	\N	14265	\N
 1550	Martha Zweig	Martha	Zweig	female	\N	graduate	Warren Wilson College	winner	Whiting Foundation	Whiting Award	1999	no genre	career	50000	\N	f	\N	14266	\N
 \.
-
-
---
 -- Data for Name: user_book_likes; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
 COPY public.user_book_likes (like_id, user_id, book_id, likedon, liked) FROM stdin;
 57	41	227	2024-03-11	f
 59	41	411	2024-03-11	t
@@ -14463,12 +14382,7 @@ COPY public.user_book_likes (like_id, user_id, book_id, likedon, liked) FROM std
 73	43	220	2024-03-11	f
 74	43	217	2024-03-11	t
 \.
-
-
---
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
 COPY public.users (id, username, email, hash, reading_preference, favorite_genre) FROM stdin;
 39	bubba	bubba@gmail.com	$2b$10$TcydZwau6kmwAJuxrYtBK.YkmgiPK4nZ/u1FjPXVdeJa44nypDhv2	\N	\N
 40	doobie	doobie@gmail.com	$2b$10$IxEms64HMEq8zFTypIrxieK.uUMfPWlEboMtUwPjOUvSuO6qTk282	\N	\N
@@ -14477,78 +14391,28 @@ COPY public.users (id, username, email, hash, reading_preference, favorite_genre
 43	buster	buster@gmail.com	$2b$10$QvIJI7T8Zn/v4aJ6GQ52i.OlIx4BbLs1YxSUiLfsSgrnEIBQWl2jG	\N	\N
 44	jambo	jambo@gmail.com	$2b$10$EkHZ1S8aQCX1kl7SphtXn.TdDzm6CqvmwV4TlUjAGYVcYMjuUcpL.	\N	\N
 \.
-
-
---
 -- Name: tablename_book_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
 SELECT pg_catalog.setval('public.tablename_book_id_seq', 14266, true);
-
-
---
 -- Name: user_book_likes_like_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
 SELECT pg_catalog.setval('public.user_book_likes_like_id_seq', 74, true);
-
-
---
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
 SELECT pg_catalog.setval('public.users_id_seq', 44, true);
-
-
---
 -- Name: user_book_likes user_book_likes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes
     ADD CONSTRAINT user_book_likes_pkey PRIMARY KEY (like_id);
-
-
---
 -- Name: user_book_likes user_book_likes_unique_user_book; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes
     ADD CONSTRAINT user_book_likes_unique_user_book UNIQUE (user_id, book_id);
-
-
---
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_email_key UNIQUE (email);
-
-
---
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-
-
---
 -- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_username_key UNIQUE (username);
-
-
---
 -- Name: user_book_likes fk_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.user_book_likes
     ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
 -- PostgreSQL database dump complete
---
-

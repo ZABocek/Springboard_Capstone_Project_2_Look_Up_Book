@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 function Profile({ userId }) {
   const [username, setUsername] = useState('');
   const [readingPreference, setReadingPreference] = useState('');
   const [favoriteGenre, setFavoriteGenre] = useState('');
   const [preferredBooks, setPreferredBooks] = useState([]);
+  const navigate = useNavigate();
 
   // Fetch user preferences
   useEffect(() => {

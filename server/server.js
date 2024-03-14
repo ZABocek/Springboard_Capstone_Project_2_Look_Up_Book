@@ -45,6 +45,32 @@ app.post("/signup", async (req, res) => {
       .json({ message: "Error registering new user", error: err.message });
   }
 });
+app.post("/admin/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const client = await pool.connect();
+    const admin = await client.query("SELECT * FROM admins WHERE username = $1", [username]);
+    if (admin.rows.length) {
+      const isValid = await bcrypt.compare(password, admin.rows[0].password_hash);
+      if (isValid) {
+        const token = jwt.sign({ id: admin.rows[0].id, isAdmin: true }, jwtSecret, {
+          expiresIn: "2h",
+        });
+        res.json({ token, adminId: admin.rows[0].id });
+      } else {
+        res.status(400).json("Wrong credentials");
+      }
+    } else {
+      res.status(400).json("Admin not found");
+    }
+    client.release();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json("Error logging in as admin");
+  }
+});
+
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {

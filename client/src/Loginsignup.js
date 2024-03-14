@@ -1,19 +1,23 @@
 import './LoginSignup.css';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Other necessary imports
+
 function LoginSignup({ setIsAuthenticated }) {
     const [loginName, setLoginName] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
     const [registerEmail, setRegisterEmail] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerName, setRegisterName] = useState('');
-    const [isLogin, setIsLogin] = useState(true); // isLogin state defined here
+    const [isLogin, setIsLogin] = useState(true);
+    const [isAdminLogin, setIsAdminLogin] = useState(false); // New state for distinguishing admin login
     const navigate = useNavigate();
+
     const onLoginSubmit = async (event) => {
         event.preventDefault();
+        // Determine the endpoint based on whether it's an admin or user login
+        const endpoint = isAdminLogin ? 'admin/login' : 'login';
         try {
-            const response = await fetch('http://localhost:5000/login', {
+            const response = await fetch(`http://localhost:5000/${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -21,13 +25,13 @@ function LoginSignup({ setIsAuthenticated }) {
                 body: JSON.stringify({ username: loginName.trim(), password: loginPassword }),
             });
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Server responded with ${response.status}: ${errorText}`);
+                throw new Error(`Server responded with ${response.status}`);
             }
             const data = await response.json();
             if (data.token) {
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('userId', data.userId);
+                const idKey = isAdminLogin ? 'adminId' : 'userId';
+                localStorage.setItem(idKey, data[idKey]);
                 setIsAuthenticated(true);
                 navigate('/homepage');
             } else {
@@ -36,7 +40,18 @@ function LoginSignup({ setIsAuthenticated }) {
         } catch (error) {
             console.error("Error during login:", error.message);
         }
-    };    
+    };
+
+    // Function to handle switching to admin login form
+    const switchToAdminLogin = () => {
+        setIsLogin(true);
+        setIsAdminLogin(true);
+    };
+
+    // Function to handle switching to user login/sign-up form
+    const switchToUserForm = () => {
+        setIsAdminLogin(false);
+    };
     
     const onRegisterSubmit = async (event) => {
         event.preventDefault();
@@ -75,14 +90,14 @@ function LoginSignup({ setIsAuthenticated }) {
         <div>
             <h1>{isLogin ? 'Please Log In' : 'Please Sign Up'}</h1>
             <form onSubmit={isLogin ? onLoginSubmit : onRegisterSubmit}>
-                {isLogin ? (
+                {isLogin && !isAdminLogin ? (
                     <>
                         <input
                             type="text"
                             placeholder="Username"
                             value={loginName}
                             onChange={(e) => setLoginName(e.target.value)}
-                            autoComplete="current-username"
+                            autoComplete="username"
                         />
                         <input
                             type="password"
@@ -92,14 +107,15 @@ function LoginSignup({ setIsAuthenticated }) {
                             autoComplete="current-password"
                         />
                     </>
-                ) : (
+                ) : null}
+                {!isLogin ? (
                     <>
                         <input
                             type="text"
                             placeholder="Name"
                             value={registerName}
                             onChange={(e) => setRegisterName(e.target.value)}
-                            autoComplete="new-name"
+                            autoComplete="name"
                         />
                         <input
                             type="email"
@@ -112,16 +128,43 @@ function LoginSignup({ setIsAuthenticated }) {
                             placeholder="Password"
                             value={registerPassword}
                             onChange={(e) => setRegisterPassword(e.target.value)}
-                            autoComplete="new-password" // Use "new-password" for registration forms
+                            autoComplete="new-password"
                         />
                     </>
-                )}
-                <button type="submit">{isLogin ? 'Log In' : 'Sign Up'}</button>
+                ) : null}
+                <button type="submit" onClick={switchToUserForm}>{isLogin && !isAdminLogin ? 'Log In' : 'Sign Up'}</button>
             </form>
-            <button onClick={toggleLogin}>
-                {isLogin ? 'Need to create an account?' : 'Already have an account?'}
-            </button>
+            {isLogin && !isAdminLogin ? (
+                <button onClick={toggleLogin}>
+                    {isLogin ? 'Need to create an account?' : 'Already have an account?'}
+                </button>
+            ) : null}
+            <div style={{ marginTop: '20px' }}>
+                <h2>If you are an administrator, login here:</h2>
+                {isAdminLogin ? (
+                    <form onSubmit={onLoginSubmit}>
+                        <input
+                            type="text"
+                            placeholder="Admin Username"
+                            value={loginName}
+                            onChange={(e) => setLoginName(e.target.value)}
+                            autoComplete="username"
+                        />
+                        <input
+                            type="password"
+                            placeholder="Admin Password"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            autoComplete="current-password"
+                        />
+                        <button type="submit">Login as Admin</button>
+                    </form>
+                ) : (
+                    <button onClick={switchToAdminLogin}>Login as Admin</button>
+                )}
+            </div>
         </div>
     );
 }
+
 export default LoginSignup;

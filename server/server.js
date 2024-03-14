@@ -282,6 +282,21 @@ app.post("/api/user/add-book", async (req, res) => {
   }
 });
 
+app.post("/api/user/remove-book", async (req, res) => {
+  const { userId, bookId } = req.body;
+
+  try {
+    const client = await pool.connect();
+    const queryText = "DELETE FROM user_preferred_books WHERE user_id = $1 AND book_id = $2";
+    await client.query(queryText, [userId, bookId]);
+    client.release();
+    res.json({ message: "Book removed from profile successfully" });
+  } catch (error) {
+    console.error("Error removing book from profile:", error);
+    res.status(500).send("Error removing book from profile");
+  }
+});
+
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
 });

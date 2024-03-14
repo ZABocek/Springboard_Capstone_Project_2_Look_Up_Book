@@ -50,6 +50,25 @@ function Profile({ userId }) {
     fetchPreferredBooks();
   }, [userId]); // Add this line to the dependencies array if it's not already there
 
+  const deletePreferredBook = async (bookId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/user/remove-book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, bookId }),
+      });
+  
+      if (response.ok) {
+        // Remove the book from the preferredBooks state to update the UI
+        setPreferredBooks(preferredBooks.filter(book => book.book_id !== bookId));
+      } else {
+        alert('Failed to delete book from profile.');
+      }
+    } catch (error) {
+      console.error("Error deleting book from profile:", error);
+    }
+  };
+  
 
   return (
     <div>
@@ -94,6 +113,9 @@ function Profile({ userId }) {
               <td>{book.full_name}</td>
               <td>{book.prize_name}</td>
               <td>{book.prize_year}</td>
+              <td>
+                <button onClick={() => deletePreferredBook(book.book_id)}>Delete</button>
+                </td>
             </tr>
           ))}
         </tbody>

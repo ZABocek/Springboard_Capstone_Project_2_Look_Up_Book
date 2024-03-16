@@ -71,6 +71,88 @@ app.post("/admin/login", async (req, res) => {
   }
 });
 
+// In server.js or wherever you handle routes
+
+// Route to check if a user is an admin
+app.get('/api/is-admin/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+      const client = await pool.connect();
+      const result = await client.query("SELECT * FROM admins WHERE id = $1", [userId]);
+      client.release();
+      
+      if (result.rows.length > 0) {
+          // User is an admin
+          res.json({ isAdmin: true, username: result.rows[0].username });
+      } else {
+          // User is not an admin
+          res.status(403).json({ isAdmin: false, message: "Access forbidden" });
+      }
+  } catch (error) {
+      console.error("Error checking admin status:", error);
+      res.status(500).send("Error checking admin status");
+  }
+});
+app.get('/api/unverified-books', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const queryText = `
+      SELECT * FROM tablename
+      WHERE verified = false
+      AND role = 'winner'
+      AND prize_type = 'book';
+    `;
+    const result = await client.query(queryText);
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching unverified books:', error);
+    res.status(500).send('Error fetching unverified books');
+  }
+});
+app.patch('/api/books/:bookId/verification', async (req, res) => {
+  const { bookId } = req.params;
+  const { verified } = req.body; // Assuming verified is a boolean
+
+  try {
+    const client = await pool.connect();
+    const queryText = 'UPDATE tablename SET verified = $1 WHERE book_id = $2';
+    await client.query(queryText, [verified, bookId]);
+    client.release();
+    res.json({ message: 'Book verification status updated successfully' });
+  } catch (error) {
+    console.error('Error updating book verification status:', error);
+    res.status(500).send('Error updating book verification status');
+  }
+});
+app.post('/api/submit-book', async (req, res) => {
+  // Extract book details from the request body
+  const {
+    fullName, givenName, lastName, gender, eliteInstitution, graduateDegree, mfaDegree,
+    prizeName, prizeYear, prizeGenre, titleOfWinningBook
+  } = req.body;
+  
+  try {
+    const client = await pool.connect();
+    // Insert the new book suggestion into 'tablename', with 'verified' initially set to false
+    const queryText = `
+      INSERT INTO tablename (full_name, given_name, last_name, gender, elite_institution, 
+                             graduate_degree, mfa_degree, prize_name, prize_year, prize_genre, 
+                             title_of_winning_book, verified, role, prize_type)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, 'winner', 'book')
+      RETURNING *;`;
+    const result = await client.query(queryText, [fullName, givenName, lastName, gender, eliteInstitution,
+                                                  graduateDegree, mfaDegree, prizeName, prizeYear, prizeGenre, 
+                                                  titleOfWinningBook]);
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error submitting new book for verification:', error);
+    res.status(500).send('Error submitting new book for verification');
+  }
+});
+
+
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {

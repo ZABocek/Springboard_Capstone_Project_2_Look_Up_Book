@@ -34,6 +34,12 @@ function LoginSignup({ setIsAuthenticated }) {
                 localStorage.setItem(idKey, data[idKey]);
                 setIsAuthenticated(true);
                 navigate('/homepage');
+                // Inside onLoginSubmit function after successful login
+                if (isAdminLogin && data.token) {
+                    localStorage.setItem('adminUsername', loginName); // Save admin username
+                    // Other login logic...
+                }
+
             } else {
                 console.error("Login error:", data.message);
             }

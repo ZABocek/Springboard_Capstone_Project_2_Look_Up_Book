@@ -28,10 +28,25 @@ const AddNewBook = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Here, add the logic to submit the form data to your server
-        console.log(bookDetails);
-        // Redirect to a confirmation page or show a success message
-        navigate('/homepage'); // Adjust the navigation as needed
+        try {
+            const response = await fetch('http://localhost:5000/api/submit-book', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add Authorization header if your API requires authentication
+                },
+                body: JSON.stringify(bookDetails),
+            });
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status} ${await response.text()}`);
+            }
+            // Display success message or redirect as needed
+            alert("Book submitted for verification successfully.");
+            navigate('/homepage'); // or to a confirmation page
+        } catch (error) {
+            console.error("Error submitting new book for verification:", error);
+            alert("Submission failed, please try again.");
+        }
     };
 
     return (

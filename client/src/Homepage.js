@@ -86,6 +86,10 @@ const Homepage = () => {
             </a>
           </li>
           <li>
+            <a href="/admin-verification">
+            </a>
+          </li>
+          <li>
             <a href="/search-books">Search Books By Authors</a>
           </li>
           <li>

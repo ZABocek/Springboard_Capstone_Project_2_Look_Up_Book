@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import LoginSignup from './LoginSignup';
 import Homepage from './Homepage';
 import AddDbBook from './add-db-book';
+import AddNewBook from './add-new-book';
+import AdminVerification from './admin-verification';
 import SearchBooks from './search-books';
 import Profile from './Profile'; // Import the Profile component
 import SearchAwards from './search-awards';

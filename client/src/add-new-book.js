@@ -81,6 +81,7 @@ const AddNewBook = () => {
                 
                 <button type="submit">Submit for Verification</button>
             </form>
+            <button onClick={() => navigate('/Homepage')}>Back to Homepage</button>
         </div>
     );
 };

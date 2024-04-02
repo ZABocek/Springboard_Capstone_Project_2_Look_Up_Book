@@ -33,6 +33,7 @@ const AdminVerification = () => {
                 throw new Error(`Error: ${response.statusText}`);
             }
             const data = await response.json();
+            console.log(data); // Add this line to debug
             setUnverifiedBooks(data);
         } catch (error) {
             console.error("Error fetching unverified books:", error);

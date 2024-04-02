@@ -97,7 +97,10 @@ app.get('/api/unverified-books', async (req, res) => {
   try {
     const client = await pool.connect();
     const queryText = `
-      SELECT * FROM tablename
+      SELECT book_id AS "bookId", 
+             title_of_winning_book AS "titleOfWinningBook", 
+             full_name AS "fullName"
+      FROM tableName
       WHERE verified = false
       AND role = 'winner'
       AND prize_type = 'book';
@@ -110,6 +113,7 @@ app.get('/api/unverified-books', async (req, res) => {
     res.status(500).send('Error fetching unverified books');
   }
 });
+
 app.patch('/api/books/:bookId/verification', async (req, res) => {
   const { bookId } = req.params;
   const { verified } = req.body; // Assuming verified is a boolean

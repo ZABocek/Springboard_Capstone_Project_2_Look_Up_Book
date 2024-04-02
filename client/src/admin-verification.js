@@ -77,6 +77,7 @@ const AdminVerification = () => {
                     ))}
                 </ul>
             ) : <p>No books awaiting verification.</p>}
+            <button onClick={() => navigate('/Homepage')}>Back to Homepage</button>
         </div>
     );
 };

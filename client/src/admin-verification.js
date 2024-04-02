@@ -3,24 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AdminVerification = () => {
-    const [isAdmin, setIsAdmin] = useState(false);
     const [adminName, setAdminName] = useState('');
     const [unverifiedBooks, setUnverifiedBooks] = useState([]);
     const navigate = useNavigate();
 
+    // Check for admin status immediately on component mount
     useEffect(() => {
-        const adminId = localStorage.getItem('adminId');
-        const adminUsername = localStorage.getItem('adminUsername'); // Ensure this is set during login
-
-        if (!adminId) {
+        const isAdmin = localStorage.getItem('isAdmin') === 'true';
+        const adminUsername = localStorage.getItem('adminUsername'); // Assuming adminUsername is set during admin login
+        
+        if (!isAdmin) {
             alert('You do not have permission to access this page.');
             navigate('/login'); // Redirect non-admin users
-        } else {
-            setIsAdmin(true);
-            setAdminName(adminUsername);
-            fetchUnverifiedBooks();
+            return; // Exit the useEffect callback to prevent further execution
         }
-    }, [navigate]);
+        
+        setAdminName(adminUsername);
+        fetchUnverifiedBooks();
+    }, [navigate]); // navigate is a dependency of this effect
 
     const fetchUnverifiedBooks = async () => {
         try {
@@ -28,12 +28,11 @@ const AdminVerification = () => {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`, // Assuming your API requires authorization
                 },
-            }); // Adjust endpoint as needed
+            });
             if (!response.ok) {
                 throw new Error(`Error: ${response.statusText}`);
             }
             const data = await response.json();
-            console.log(data); // Add this line to debug
             setUnverifiedBooks(data);
         } catch (error) {
             console.error("Error fetching unverified books:", error);
@@ -41,7 +40,6 @@ const AdminVerification = () => {
     };
 
     const handleVerification = async (bookId, verified) => {
-        console.log(`Book ID: ${bookId}, Verified: ${verified}`);
         try {
             const response = await fetch(`http://localhost:5000/api/books/${bookId}/verification`, {
                 method: 'PATCH',
@@ -60,8 +58,6 @@ const AdminVerification = () => {
         }
     };
 
-    if (!isAdmin) return <p>You do not have access to this page.</p>;
-
     return (
         <div>
             <h1>Welcome, {adminName}!</h1>
@@ -77,7 +73,7 @@ const AdminVerification = () => {
                     ))}
                 </ul>
             ) : <p>No books awaiting verification.</p>}
-            <button onClick={() => navigate('/Homepage')}>Back to Homepage</button>
+            <button onClick={() => navigate('/homepage')}>Back to Homepage</button>
         </div>
     );
 };

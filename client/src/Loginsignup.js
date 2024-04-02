@@ -16,6 +16,7 @@ function LoginSignup({ setIsAuthenticated }) {
         event.preventDefault();
         // Determine the endpoint based on whether it's an admin or user login
         const endpoint = isAdminLogin ? 'admin/login' : 'login';
+    
         try {
             const response = await fetch(`http://localhost:5000/${endpoint}`, {
                 method: 'POST',
@@ -24,6 +25,7 @@ function LoginSignup({ setIsAuthenticated }) {
                 },
                 body: JSON.stringify({ username: loginName.trim(), password: loginPassword }),
             });
+    
             if (!response.ok) {
                 throw new Error(`Server responded with ${response.status}`);
             }
@@ -33,13 +35,30 @@ function LoginSignup({ setIsAuthenticated }) {
                 const idKey = isAdminLogin ? 'adminId' : 'userId';
                 localStorage.setItem(idKey, data[idKey]);
                 setIsAuthenticated(true);
-                navigate('/homepage');
-                // Inside onLoginSubmit function after successful login
-                if (isAdminLogin && data.token) {
+    
+                // Check if the login is for an admin and fetch admin status
+                if (isAdminLogin) {
                     localStorage.setItem('adminUsername', loginName); // Save admin username
-                    // Other login logic...
+                    // Fetch the admin status
+                    const isAdminResponse = await fetch(`http://localhost:5000/api/is-admin/${data[idKey]}`, {
+                        headers: {
+                            'Authorization': `Bearer ${data.token}`, // Use the token for authorization
+                        },
+                    });
+                    if (!isAdminResponse.ok) {
+                        throw new Error('Failed to fetch admin status');
+                    }
+                    const isAdminData = await isAdminResponse.json();
+                    if (isAdminData.isAdmin) {
+                        localStorage.setItem('isAdmin', 'true'); // Store admin status
+                    } else {
+                        localStorage.removeItem('isAdmin'); // Ensure it's removed if not admin
+                    }
+                } else {
+                    localStorage.removeItem('isAdmin'); // Ensure isAdmin is removed for regular users
                 }
-
+    
+                navigate('/homepage');
             } else {
                 console.error("Login error:", data.message);
             }
@@ -47,6 +66,7 @@ function LoginSignup({ setIsAuthenticated }) {
             console.error("Error during login:", error.message);
         }
     };
+    
 
     // Function to handle switching to admin login form
     const switchToAdminLogin = () => {

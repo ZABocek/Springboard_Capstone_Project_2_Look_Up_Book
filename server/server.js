@@ -142,7 +142,6 @@ app.post('/api/submit-book', async (req, res) => {
   const personId = uuidv4();
   const authorId = uuidv4();
   const bookId = uuidv4();
-  const awardId = uuidv4();
 
   try {
     const client = await pool.connect();

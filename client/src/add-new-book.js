@@ -1,5 +1,5 @@
 // In src/add-new-book.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AddNewBook = () => {
@@ -11,12 +11,21 @@ const AddNewBook = () => {
         eliteInstitution: '',
         graduateDegree: '',
         mfaDegree: '',
-        prizeName: '',
         prizeYear: '',
         prizeGenre: '',
         titleOfWinningBook: ''
     });
+    const [awards, setAwards] = useState([]);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchAwards = async () => {
+            const response = await fetch('http://localhost:5000/api/awards');
+            const data = await response.json();
+            setAwards(data);
+        };
+        fetchAwards();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -33,21 +42,20 @@ const AddNewBook = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Add Authorization header if your API requires authentication
                 },
                 body: JSON.stringify(bookDetails),
             });
             if (!response.ok) {
                 throw new Error(`Error: ${response.status} ${await response.text()}`);
             }
-            // Display success message or redirect as needed
             alert("Book submitted for verification successfully.");
-            navigate('/homepage'); // or to a confirmation page
+            navigate('/homepage');
         } catch (error) {
             console.error("Error submitting new book for verification:", error);
             alert("Submission failed, please try again.");
         }
     };
+
 
     return (
         <div>
@@ -67,8 +75,14 @@ const AddNewBook = () => {
                 <input type="text" name="graduateDegree" value={bookDetails.graduateDegree} onChange={handleChange} />
                 <label>Master of Fine Arts Degree? (please enter where they got their Master's, if so):</label>
                 <input type="text" name="mfaDegree" value={bookDetails.mfaDegree} onChange={handleChange} />
-                <label>Name of Prize Book Won (Please Start Each Word With A Capital Letter):</label>
-                <input type="text" name="prizeName" value={bookDetails.prizeName} onChange={handleChange} required />
+                {/* New dropdown for selecting award */}
+                <label>Prize Name:</label>
+                <select name="awardId" value={bookDetails.awardId} onChange={handleChange} required>
+                    <option value="">Select an Award</option>
+                    {awards.map(award => (
+                        <option key={award.award_id} value={award.award_id}>{award.prize_name}</option>
+                    ))}
+                </select>
                 <label>Year Book Won The Award:</label>
                 <input type="integer" name="prizeYear" value={bookDetails.prizeYear} onChange={handleChange} required />
                 <label>Prize Genre (Prose or Poetry):</label>

@@ -59,6 +59,8 @@ const AddNewBook = () => {
                 <input type="text" name="givenName" value={bookDetails.givenName} onChange={handleChange} required />
                 <label>Author's Last Name:</label>
                 <input type="text" name="lastName" value={bookDetails.lastName} onChange={handleChange} required />
+                <label>Author's Desired Gender (please type female, male, or nonbinary):</label>
+                <input type="text" name="gender" value={bookDetails.gender} onChange={handleChange} required />
                 <label>Exceptional University Author Went To (If They Went To An Elite Institution):</label>
                 <input type="text" name="eliteInstitution" value={bookDetails.eliteInstitution} onChange={handleChange} />
                 <label>Graduate Degree? (please fill with word "graduate" if so):</label>

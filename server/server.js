@@ -135,7 +135,7 @@ app.post('/api/submit-book', async (req, res) => {
   // Extract book details from the request body including the newly added awardId
   const {
     fullName, givenName, lastName, gender, eliteInstitution, graduateDegree, mfaDegree,
-    prizeYear, prizeGenre, titleOfWinningBook, awardId
+    prizeYear, prizeGenre, titleOfWinningBook, awardId // Ensure this is passed as an integer from the client
   } = req.body;
 
   // Generate UUIDs for the respective IDs
@@ -152,16 +152,18 @@ app.post('/api/submit-book', async (req, res) => {
                              title_of_winning_book, verified, role, prize_type, author_id, book_id, award_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, 'winner', 'book', $12, $13, $14)
       RETURNING *;`;
+    // Ensure awardId is correctly handled as an integer
     const result = await client.query(queryText, [personId, fullName, givenName, lastName, gender, eliteInstitution,
                                                   graduateDegree, mfaDegree, prizeYear, prizeGenre, 
-                                                  titleOfWinningBook, authorId, bookId, awardId]);
+                                                  titleOfWinningBook, authorId, bookId, parseInt(awardId)]);
     client.release();
     res.json(result.rows[0]);
-  } catch (error) {
+  } catch ( error ) {
     console.error('Error submitting new book for verification:', error);
     res.status(500).send('Error submitting new book for verification');
   }
 });
+
 
 
 app.post("/login", async (req, res) => {

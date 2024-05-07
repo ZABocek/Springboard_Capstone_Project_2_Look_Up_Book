@@ -132,10 +132,10 @@ app.patch('/api/books/:bookId/verification', async (req, res) => {
   }
 });
 app.post('/api/submit-book', async (req, res) => {
-  // Extract book details from the request body
+  // Extract book details from the request body including the newly added awardId
   const {
     fullName, givenName, lastName, gender, eliteInstitution, graduateDegree, mfaDegree,
-    prizeName, prizeYear, prizeGenre, titleOfWinningBook
+    prizeYear, prizeGenre, titleOfWinningBook, awardId
   } = req.body;
 
   // Generate UUIDs for the respective IDs
@@ -148,12 +148,12 @@ app.post('/api/submit-book', async (req, res) => {
     // Insert the new book suggestion into 'tablename', with 'verified' initially set to false
     const queryText = `
       INSERT INTO tablename (person_id, full_name, given_name, last_name, gender, elite_institution, 
-                             graduate_degree, mfa_degree, prize_name, prize_year, prize_genre, 
+                             graduate_degree, mfa_degree, prize_year, prize_genre, 
                              title_of_winning_book, verified, role, prize_type, author_id, book_id, award_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, 'winner', 'book', $13, $14, $15)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, 'winner', 'book', $12, $13, $14)
       RETURNING *;`;
     const result = await client.query(queryText, [personId, fullName, givenName, lastName, gender, eliteInstitution,
-                                                  graduateDegree, mfaDegree, prizeName, prizeYear, prizeGenre, 
+                                                  graduateDegree, mfaDegree, prizeYear, prizeGenre, 
                                                   titleOfWinningBook, authorId, bookId, awardId]);
     client.release();
     res.json(result.rows[0]);

@@ -1,6 +1,8 @@
 require("dotenv").config({ path: ".env" }); // Adjust the path to the .env file if needed
 const express = require("express");
 const bodyParser = require("body-parser");
+// Import UUID library to generate IDs
+const { v4: uuidv4 } = require('uuid');
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
@@ -135,19 +137,25 @@ app.post('/api/submit-book', async (req, res) => {
     fullName, givenName, lastName, gender, eliteInstitution, graduateDegree, mfaDegree,
     prizeName, prizeYear, prizeGenre, titleOfWinningBook
   } = req.body;
-  
+
+  // Generate UUIDs for the respective IDs
+  const personId = uuidv4();
+  const authorId = uuidv4();
+  const bookId = uuidv4();
+  const awardId = uuidv4();
+
   try {
     const client = await pool.connect();
     // Insert the new book suggestion into 'tablename', with 'verified' initially set to false
     const queryText = `
-      INSERT INTO tablename (full_name, given_name, last_name, gender, elite_institution, 
+      INSERT INTO tablename (person_id, full_name, given_name, last_name, gender, elite_institution, 
                              graduate_degree, mfa_degree, prize_name, prize_year, prize_genre, 
-                             title_of_winning_book, verified, role, prize_type)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, 'winner', 'book')
+                             title_of_winning_book, verified, role, prize_type, author_id, book_id, award_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, 'winner', 'book', $13, $14, $15)
       RETURNING *;`;
-    const result = await client.query(queryText, [fullName, givenName, lastName, gender, eliteInstitution,
+    const result = await client.query(queryText, [personId, fullName, givenName, lastName, gender, eliteInstitution,
                                                   graduateDegree, mfaDegree, prizeName, prizeYear, prizeGenre, 
-                                                  titleOfWinningBook]);
+                                                  titleOfWinningBook, authorId, bookId, awardId]);
     client.release();
     res.json(result.rows[0]);
   } catch (error) {

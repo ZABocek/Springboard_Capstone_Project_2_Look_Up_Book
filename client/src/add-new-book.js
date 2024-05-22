@@ -1,4 +1,3 @@
-// In src/add-new-book.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -41,7 +40,8 @@ const AddNewBook = () => {
         try {
             const bookDetailsToSend = {
                 ...bookDetails,
-                prizeYear: parseInt(bookDetails.prizeYear, 10)  // Ensure prizeYear is a number
+                prizeYear: parseInt(bookDetails.prizeYear, 10),  // Ensure prizeYear is a number
+                awardId: parseInt(bookDetails.awardId, 10)  // Ensure awardId is a number
             };
             const response = await fetch('http://localhost:5000/api/submit-book', {
                 method: 'POST',

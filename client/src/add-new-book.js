@@ -13,7 +13,8 @@ const AddNewBook = () => {
         mfaDegree: '',
         prizeYear: '',
         prizeGenre: '',
-        titleOfWinningBook: ''
+        titleOfWinningBook: '',
+        awardId: ''  // Add this line
     });
     const [awards, setAwards] = useState([]);
     const navigate = useNavigate();
@@ -59,8 +60,6 @@ const AddNewBook = () => {
             alert("Submission failed, please try again.");
         }
     };
-    
-
 
     return (
         <div>
@@ -80,7 +79,6 @@ const AddNewBook = () => {
                 <input type="text" name="graduateDegree" value={bookDetails.graduateDegree} onChange={handleChange} />
                 <label>Master of Fine Arts Degree? (please enter where they got their Master's, if so):</label>
                 <input type="text" name="mfaDegree" value={bookDetails.mfaDegree} onChange={handleChange} />
-                {/* New dropdown for selecting award */}
                 <label>Prize Name:</label>
                 <select name="awardId" value={bookDetails.awardId} onChange={handleChange} required>
                     <option value="">Select an Award</option>

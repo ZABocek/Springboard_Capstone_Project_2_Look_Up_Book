@@ -38,12 +38,16 @@ const AddNewBook = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const bookDetailsToSend = {
+                ...bookDetails,
+                prizeYear: parseInt(bookDetails.prizeYear, 10)  // Ensure prizeYear is a number
+            };
             const response = await fetch('http://localhost:5000/api/submit-book', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(bookDetails),
+                body: JSON.stringify(bookDetailsToSend),
             });
             if (!response.ok) {
                 throw new Error(`Error: ${response.status} ${await response.text()}`);
@@ -55,6 +59,7 @@ const AddNewBook = () => {
             alert("Submission failed, please try again.");
         }
     };
+    
 
 
     return (

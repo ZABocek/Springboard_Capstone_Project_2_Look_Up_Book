@@ -87,7 +87,7 @@ const AddNewBook = () => {
                     ))}
                 </select>
                 <label>Year Book Won The Award:</label>
-                <input type="integer" name="prizeYear" value={bookDetails.prizeYear} onChange={handleChange} required />
+                <input type="number" name="prizeYear" value={bookDetails.prizeYear} onChange={handleChange} required />
                 <label>Prize Genre (Prose or Poetry):</label>
                 <select name="prizeGenre" value={bookDetails.prizeGenre} onChange={handleChange} required>
                     <option value="">Select Genre</option>

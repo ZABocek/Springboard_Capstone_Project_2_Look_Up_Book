@@ -1,17 +1,19 @@
-import './LoginSignup.css';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import './LoginSignup.css'; // Import the CSS file for styling
+import React, { useState } from 'react'; // Import React and useState hook
+import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom for navigation
 
 function LoginSignup({ setIsAuthenticated }) {
+    // Define state variables for managing form inputs and login/signup state
     const [loginName, setLoginName] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
     const [registerEmail, setRegisterEmail] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerName, setRegisterName] = useState('');
-    const [isLogin, setIsLogin] = useState(true);
-    const [isAdminLogin, setIsAdminLogin] = useState(false); // New state for distinguishing admin login
-    const navigate = useNavigate();
+    const [isLogin, setIsLogin] = useState(true); // State to toggle between login and signup form
+    const [isAdminLogin, setIsAdminLogin] = useState(false); // State to distinguish admin login
+    const navigate = useNavigate(); // Hook to navigate programmatically
 
+    // Function to handle login form submission
     const onLoginSubmit = async (event) => {
         event.preventDefault();
         // Determine the endpoint based on whether it's an admin or user login
@@ -23,7 +25,7 @@ function LoginSignup({ setIsAuthenticated }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username: loginName.trim(), password: loginPassword }),
+                body: JSON.stringify({ username: loginName.trim(), password: loginPassword }), // Send username and password
             });
     
             if (!response.ok) {
@@ -31,10 +33,10 @@ function LoginSignup({ setIsAuthenticated }) {
             }
             const data = await response.json();
             if (data.token) {
-                localStorage.setItem('token', data.token);
-                const idKey = isAdminLogin ? 'adminId' : 'userId';
+                localStorage.setItem('token', data.token); // Save token in localStorage
+                const idKey = isAdminLogin ? 'adminId' : 'userId'; // Use different key for admin
                 localStorage.setItem(idKey, data[idKey]);
-                setIsAuthenticated(true);
+                setIsAuthenticated(true); // Set authentication state
     
                 // Check if the login is for an admin and fetch admin status
                 if (isAdminLogin) {
@@ -58,7 +60,7 @@ function LoginSignup({ setIsAuthenticated }) {
                     localStorage.removeItem('isAdmin'); // Ensure isAdmin is removed for regular users
                 }
     
-                navigate('/homepage');
+                navigate('/homepage'); // Navigate to homepage
             } else {
                 console.error("Login error:", data.message);
             }
@@ -67,7 +69,6 @@ function LoginSignup({ setIsAuthenticated }) {
         }
     };
     
-
     // Function to handle switching to admin login form
     const switchToAdminLogin = () => {
         setIsLogin(true);
@@ -78,7 +79,8 @@ function LoginSignup({ setIsAuthenticated }) {
     const switchToUserForm = () => {
         setIsAdminLogin(false);
     };
-    
+
+    // Function to handle registration form submission
     const onRegisterSubmit = async (event) => {
         event.preventDefault();
         const newUser = {
@@ -92,7 +94,7 @@ function LoginSignup({ setIsAuthenticated }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(newUser),
+                body: JSON.stringify(newUser), // Send new user data
             });
             if (!response.ok) {
                 const errorText = await response.text();
@@ -100,10 +102,10 @@ function LoginSignup({ setIsAuthenticated }) {
             }
             const data = await response.json(); // Assuming the happy path returns JSON
             if (data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('userId', data.userId); // Correctly placed here
-                setIsAuthenticated(true);
-                navigate('/homepage');
+                localStorage.setItem('token', data.token); // Save token in localStorage
+                localStorage.setItem('userId', data.userId); // Save userId in localStorage
+                setIsAuthenticated(true); // Set authentication state
+                navigate('/homepage'); // Navigate to homepage
             } else {
                 console.error("Registration error:", data.message);
             }
@@ -111,7 +113,10 @@ function LoginSignup({ setIsAuthenticated }) {
             console.error("Error registering new user:", error);
         }
     };
-    const toggleLogin = () => setIsLogin(!isLogin); // Function to toggle between login and signup
+
+    // Function to toggle between login and signup form
+    const toggleLogin = () => setIsLogin(!isLogin); 
+
     return (
         <div>
             <h1>{isLogin ? 'Please Log In' : 'Please Sign Up'}</h1>
@@ -193,4 +198,4 @@ function LoginSignup({ setIsAuthenticated }) {
     );
 }
 
-export default LoginSignup;
+export default LoginSignup; // Export the LoginSignup component

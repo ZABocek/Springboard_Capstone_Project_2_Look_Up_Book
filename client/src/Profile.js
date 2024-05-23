@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// Profile component to display and update user preferences and their preferred books
 function Profile({ userId }) {
+  // State variables to store user information and preferences
   const [username, setUsername] = useState('');
   const [readingPreference, setReadingPreference] = useState('');
   const [favoriteGenre, setFavoriteGenre] = useState('');
   const [preferredBooks, setPreferredBooks] = useState([]);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Hook to programmatically navigate to different routes
 
-  // Fetch user preferences
+  // useEffect hook to fetch user preferences when the component mounts or when userId changes
   useEffect(() => {
     const fetchPreferences = async () => {
       const response = await fetch(`http://localhost:5000/api/user/preference/${userId}`);
@@ -19,11 +22,10 @@ function Profile({ userId }) {
       }
     };
   
-    fetchPreferences();
-  }, [userId]);
-  
+    fetchPreferences(); // Call the function to fetch user preferences
+  }, [userId]); // Dependency array to re-run the effect when userId changes
 
-  // Update user preferences
+  // Function to update user preferences
   const updatePreferences = async () => {
     const response = await fetch('http://localhost:5000/api/user/preference/update', {
       method: 'POST',
@@ -38,6 +40,7 @@ function Profile({ userId }) {
     }
   };
 
+  // useEffect hook to fetch user's preferred books when the component mounts or when userId changes
   useEffect(() => {
     const fetchPreferredBooks = async () => {
       const response = await fetch(`http://localhost:5000/api/user/${userId}/preferred-books`);
@@ -47,9 +50,10 @@ function Profile({ userId }) {
       }
     };
 
-    fetchPreferredBooks();
-  }, [userId]); // Add this line to the dependencies array if it's not already there
+    fetchPreferredBooks(); // Call the function to fetch user's preferred books
+  }, [userId]); // Dependency array to re-run the effect when userId changes
 
+  // Function to delete a preferred book from the user's profile
   const deletePreferredBook = async (bookId) => {
     try {
       const response = await fetch(`http://localhost:5000/api/user/remove-book`, {
@@ -68,7 +72,6 @@ function Profile({ userId }) {
       console.error("Error deleting book from profile:", error);
     }
   };
-  
 
   return (
     <div>

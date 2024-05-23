@@ -21,6 +21,16 @@ const pool = new Pool({
 
 const jwtSecret = process.env.JWT_SECRET;
 
+const generateUniqueId = async () => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query("SELECT nextval('unique_id_seq') AS id");
+    return result.rows[0].id;
+  } finally {
+    client.release();
+  }
+};
+
 app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
   if (!username || !password || !email) {
@@ -127,13 +137,19 @@ app.patch('/api/books/:bookId/verification', async (req, res) => {
   }
 });
 
+// Update the submit-book endpoint
 app.post('/api/submit-book', async (req, res) => {
   const {
     fullName, givenName, lastName, gender, eliteInstitution, graduateDegree, mfaDegree,
-    prizeYear, prizeGenre, titleOfWinningBook, awardId, personId, authorId, bookId, verified
+    prizeYear, prizeGenre, titleOfWinningBook, awardId
   } = req.body;
 
   try {
+    const personId = await generateUniqueId();
+    const authorId = await generateUniqueId();
+    const bookId = await generateUniqueId();
+    const verified = false; // New books start as unverified
+
     const client = await pool.connect();
     const queryText = `
       INSERT INTO tablename (person_id, full_name, given_name, last_name, gender, elite_institution, 

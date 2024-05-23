@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 
 const AddNewBook = () => {
     const [bookDetails, setBookDetails] = useState({
@@ -14,7 +13,7 @@ const AddNewBook = () => {
         prizeYear: '',
         prizeGenre: '',
         titleOfWinningBook: '',
-        awardId: '',
+        awardId: ''
     });
     const [awards, setAwards] = useState([]);
     const navigate = useNavigate();
@@ -42,11 +41,7 @@ const AddNewBook = () => {
             const bookDetailsToSend = {
                 ...bookDetails,
                 prizeYear: parseInt(bookDetails.prizeYear, 10),
-                awardId: parseInt(bookDetails.awardId, 10),
-                personId: uuidv4(),
-                authorId: uuidv4(),
-                bookId: uuidv4(),
-                verified: false
+                awardId: parseInt(bookDetails.awardId, 10)
             };
             const response = await fetch('http://localhost:5000/api/submit-book', {
                 method: 'POST',
@@ -99,10 +94,8 @@ const AddNewBook = () => {
                     <option value="prose">Prose</option>
                     <option value="poetry">Poetry</option>
                 </select>
-                
                 <label>Title of Winning Book:</label>
                 <input type="text" name="titleOfWinningBook" value={bookDetails.titleOfWinningBook} onChange={handleChange} required />
-                
                 <button type="submit">Submit for Verification</button>
             </form>
             <button onClick={() => navigate('/Homepage')}>Back to Homepage</button>

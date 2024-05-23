@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 
-// Component for adding a new book for verification
 const AddNewBook = () => {
-    // State to hold book details
     const [bookDetails, setBookDetails] = useState({
         fullName: '',
         givenName: '',
@@ -15,14 +14,11 @@ const AddNewBook = () => {
         prizeYear: '',
         prizeGenre: '',
         titleOfWinningBook: '',
-        awardId: ''  // Add this line
+        awardId: '',
     });
-
-    // State to hold the list of awards fetched from the server
     const [awards, setAwards] = useState([]);
     const navigate = useNavigate();
 
-    // Fetch the list of awards from the server when the component mounts
     useEffect(() => {
         const fetchAwards = async () => {
             const response = await fetch('http://localhost:5000/api/awards');
@@ -32,7 +28,6 @@ const AddNewBook = () => {
         fetchAwards();
     }, []);
 
-    // Handle changes to input fields and update the corresponding state
     const handleChange = (e) => {
         const { name, value } = e.target;
         setBookDetails(prevState => ({
@@ -41,15 +36,17 @@ const AddNewBook = () => {
         }));
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Ensure prizeYear and awardId are numbers before sending the request
             const bookDetailsToSend = {
                 ...bookDetails,
-                prizeYear: parseInt(bookDetails.prizeYear, 10),  // Ensure prizeYear is a number
-                awardId: parseInt(bookDetails.awardId, 10)  // Ensure awardId is a number
+                prizeYear: parseInt(bookDetails.prizeYear, 10),
+                awardId: parseInt(bookDetails.awardId, 10),
+                personId: uuidv4(),
+                authorId: uuidv4(),
+                bookId: uuidv4(),
+                verified: false
             };
             const response = await fetch('http://localhost:5000/api/submit-book', {
                 method: 'POST',

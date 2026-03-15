@@ -108,6 +108,19 @@
     white-space: normal;
 }
 
+.vote-icon-button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    margin: 0 8px;
+    vertical-align: middle;
+}
+
+.vote-icon {
+    height: 50px;
+}
+
 .book-table th {
     background-color: #f2f2f2;
     font-weight: bold;

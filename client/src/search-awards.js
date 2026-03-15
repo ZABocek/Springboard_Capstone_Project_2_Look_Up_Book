@@ -10,6 +10,14 @@ const SearchAwards = () => {
   const [selectedAwardType, setSelectedAwardType] = useState('');
   const navigate = useNavigate();
 
+  const formatAwardCountText = (award) => {
+    const count = Number(award.book_count);
+    if (award.prize_type === 'book') {
+      return count > 0 ? ` (${count} books)` : ' (no books)';
+    }
+    return count > 0 ? ` (${count} authors)` : ' (no authors)';
+  };
+
   useEffect(() => {
     const fetchAwards = async () => {
       try {
@@ -84,9 +92,7 @@ const SearchAwards = () => {
             <option key={award.award_id} value={award.award_id}>
               {award.prize_name}
               {award.prize_type === 'book' ? ' [Book Award]' : ' [Career Award]'}
-              {award.prize_type === 'book'
-                ? (Number(award.book_count) > 0 ? ` (${award.book_count} books)` : ' (no books)')
-                : (Number(award.book_count) > 0 ? ` (${award.book_count} authors)` : ' (no authors)')}
+              {formatAwardCountText(award)}
             </option>
           ))}
         </select>
@@ -132,7 +138,7 @@ const SearchAwards = () => {
               <tr style={{ backgroundColor: '#f0f0f0', borderBottom: '2px solid #ddd' }}>
                 <th style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'left' }}>Award</th>
                 <th style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'left' }}>
-                  {selectedAwardType === 'book' ? 'Book Title' : 'Author Name'}
+                  {selectedAwardType === 'book' ? 'Book Title' : 'Author Career Award'}
                 </th>
                 <th style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'left' }}>Prize Amount</th>
                 <th style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'left' }}>Year</th>

@@ -21,6 +21,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Accept optional client diagnostics without polluting logs with 404 noise.
+app.post('/api/client-debug-log', (_req, res) => {
+  res.status(204).end();
+});
+
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -162,6 +167,31 @@ async function ensureAuthorAwardsModel() {
     await client.query('CREATE INDEX IF NOT EXISTS idx_author_awards_award_id ON public.author_awards(award_id);');
 
     await client.query(`
+      ALTER TABLE public.author_awards
+      ADD COLUMN IF NOT EXISTS prize_amount numeric;
+    `);
+
+    await client.query(`
+      ALTER TABLE public.author_awards
+      ADD COLUMN IF NOT EXISTS like_dislike text DEFAULT 'Not Applicable';
+    `);
+
+    await client.query(`
+      UPDATE public.author_awards aa
+      SET prize_amount = aw.prize_amount
+      FROM public.awards aw
+      WHERE aa.award_id = aw.id
+        AND aa.prize_amount IS NULL
+        AND aw.prize_amount IS NOT NULL;
+    `);
+
+    await client.query(`
+      UPDATE public.author_awards
+      SET like_dislike = 'Not Applicable'
+      WHERE like_dislike IS NULL OR TRIM(like_dislike) = '';
+    `);
+
+    await client.query(`
       ALTER TABLE public.user_preferred_books
       ADD COLUMN IF NOT EXISTS author_award_id integer REFERENCES public.author_awards(id) ON DELETE CASCADE;
     `);
@@ -264,6 +294,123 @@ async function ensureAuthorAwardsModel() {
 
     await client.query('COMMIT');
     console.log('Author-awards model ensured.');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function ensureLikeDislikeInfrastructure() {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.admins (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL
+      );
+    `);
+
+    await client.query(`
+      ALTER TABLE public.admins
+      ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
+    `);
+
+    await client.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND table_name = 'admins'
+            AND column_name = 'password'
+        ) THEN
+          UPDATE public.admins
+          SET password_hash = COALESCE(NULLIF(password_hash, ''), password)
+          WHERE password_hash IS NULL OR password_hash = '';
+        END IF;
+      END
+      $$;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.user_book_likes (
+        id SERIAL PRIMARY KEY,
+        user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+        book_id integer NOT NULL REFERENCES public.books(id) ON DELETE CASCADE,
+        liked boolean NOT NULL,
+        likedon date DEFAULT CURRENT_DATE,
+        UNIQUE (user_id, book_id)
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.admin_book_likes (
+        id SERIAL PRIMARY KEY,
+        admin_id integer NOT NULL REFERENCES public.admins(id) ON DELETE CASCADE,
+        book_id integer NOT NULL REFERENCES public.books(id) ON DELETE CASCADE,
+        liked boolean NOT NULL,
+        likedon date DEFAULT CURRENT_DATE,
+        UNIQUE (admin_id, book_id)
+      );
+    `);
+
+    await client.query('CREATE INDEX IF NOT EXISTS idx_user_book_likes_book_id ON public.user_book_likes(book_id);');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_admin_book_likes_book_id ON public.admin_book_likes(book_id);');
+
+    await client.query(`
+      ALTER TABLE public.books
+      ADD COLUMN IF NOT EXISTS like_dislike text;
+    `);
+
+    await client.query(`
+      UPDATE public.books b
+      SET like_dislike = CONCAT(
+        COALESCE(v.likes, 0),
+        ' Likes / ',
+        COALESCE(v.dislikes, 0),
+        ' Dislikes'
+      )
+      FROM (
+        SELECT
+          book_id,
+          SUM(CASE WHEN liked THEN 1 ELSE 0 END)::int AS likes,
+          SUM(CASE WHEN NOT liked THEN 1 ELSE 0 END)::int AS dislikes
+        FROM (
+          SELECT book_id, liked FROM public.user_book_likes
+          UNION ALL
+          SELECT book_id, liked FROM public.admin_book_likes
+        ) all_votes
+        GROUP BY book_id
+      ) v
+      WHERE b.id = v.book_id;
+    `);
+
+    await client.query(`
+      UPDATE public.books
+      SET like_dislike = '0 Likes / 0 Dislikes'
+      WHERE like_dislike IS NULL OR TRIM(like_dislike) = '';
+    `);
+
+    await client.query(`
+      ALTER TABLE public.author_awards
+      ADD COLUMN IF NOT EXISTS like_dislike text DEFAULT 'Not Applicable';
+    `);
+
+    await client.query(`
+      UPDATE public.author_awards
+      SET like_dislike = 'Not Applicable'
+      WHERE like_dislike IS NULL OR TRIM(like_dislike) = '';
+    `);
+
+    await client.query('COMMIT');
+    console.log('Like/dislike infrastructure ensured.');
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -543,7 +690,16 @@ app.get('/api/tableName', async (req, res) => {
             COALESCE(award_names.prize_names, legacy_aw.prize_name, 'N/A') AS prize_name,
             COALESCE(award_names.prize_types, legacy_aw.prize_type, 'book') AS prize_type,
             COALESCE(CAST(l.like_count AS INTEGER), 0) AS like_count,
-            COALESCE(CAST(l.dislike_count AS INTEGER), 0) AS dislike_count
+            COALESCE(CAST(l.dislike_count AS INTEGER), 0) AS dislike_count,
+            COALESCE(
+              b.like_dislike,
+              CONCAT(
+                COALESCE(CAST(l.like_count AS INTEGER), 0),
+                ' Likes / ',
+                COALESCE(CAST(l.dislike_count AS INTEGER), 0),
+                ' Dislikes'
+              )
+            ) AS like_dislike
           FROM books b
           LEFT JOIN authors a ON b.author_id = a.id
           LEFT JOIN awards legacy_aw ON b.award_id = legacy_aw.id
@@ -560,7 +716,11 @@ app.get('/api/tableName', async (req, res) => {
               book_id,
               COUNT(*) FILTER (WHERE liked = true) AS like_count,
               COUNT(*) FILTER (WHERE liked = false) AS dislike_count
-            FROM user_book_likes
+            FROM (
+              SELECT book_id, liked FROM user_book_likes
+              UNION ALL
+              SELECT book_id, liked FROM admin_book_likes
+            ) all_votes
             GROUP BY book_id
           ) l ON b.id = l.book_id
           WHERE b.verified = true
@@ -588,7 +748,8 @@ app.get('/api/tableName', async (req, res) => {
             aw.prize_name,
             'career'::text AS prize_type,
             0::integer AS like_count,
-            0::integer AS dislike_count
+            0::integer AS dislike_count,
+            COALESCE(aa.like_dislike, 'Not Applicable') AS like_dislike
           FROM author_awards aa
           JOIN awards aw ON aw.id = aa.award_id
           LEFT JOIN authors a ON a.id = aa.author_id
@@ -738,7 +899,7 @@ app.get('/api/awards/:awardId', async (req, res) => {
             aa.source,
             a.prize_name,
             a.prize_type,
-            a.prize_amount
+            COALESCE(aa.prize_amount, a.prize_amount) AS prize_amount
           FROM author_awards aa
           JOIN awards a ON aa.award_id = a.id
           LEFT JOIN authors auth ON aa.author_id = auth.id
@@ -792,40 +953,103 @@ app.get('/api/awards/:awardId', async (req, res) => {
   }
 });
 
-app.post('/api/like', authorizeSelfOrAdmin((req) => req.body.userId), async (req, res) => {
-  const { userId, bookId, liked } = req.body;
+app.post('/api/like', authenticateToken, async (req, res) => {
+  const { bookId, liked } = req.body;
 
-  if (userId == null || bookId == null || typeof liked !== 'boolean') {
-    return res.status(400).json({ message: 'userId, bookId, and liked are required' });
+  if (bookId == null || typeof liked !== 'boolean') {
+    return res.status(400).json({ message: 'bookId and liked are required' });
   }
 
   try {
     const payload = await withClient(async (client) => {
-      await client.query(
+      const isAdmin = Boolean(req.user?.isAdmin);
+      const actorId = Number(req.user?.id);
+
+      if (!Number.isInteger(actorId)) {
+        throw new TypeError('Unable to resolve current user identity.');
+      }
+
+      const likesTable = isAdmin ? 'admin_book_likes' : 'user_book_likes';
+      const actorColumn = isAdmin ? 'admin_id' : 'user_id';
+
+      const existingVote = await client.query(
         `
-          INSERT INTO user_book_likes (user_id, book_id, liked, likedon)
-          VALUES ($1, $2, $3, NOW()::date)
-          ON CONFLICT (user_id, book_id)
-          DO UPDATE SET liked = EXCLUDED.liked, likedon = NOW()::date;
+          SELECT liked
+          FROM ${likesTable}
+          WHERE ${actorColumn} = $1 AND book_id = $2
+          LIMIT 1;
         `,
-        [userId, bookId, liked]
+        [actorId, bookId]
       );
+
+      let currentVote = liked;
+
+      if (existingVote.rows.length > 0) {
+        const previousVote = existingVote.rows[0].liked;
+
+        if (previousVote === liked) {
+          await client.query(
+            `
+              DELETE FROM ${likesTable}
+              WHERE ${actorColumn} = $1 AND book_id = $2;
+            `,
+            [actorId, bookId]
+          );
+          currentVote = null;
+        } else {
+          await client.query(
+            `
+              UPDATE ${likesTable}
+              SET liked = $3, likedon = NOW()::date
+              WHERE ${actorColumn} = $1 AND book_id = $2;
+            `,
+            [actorId, bookId, liked]
+          );
+          currentVote = liked;
+        }
+      } else {
+        await client.query(
+          `
+            INSERT INTO ${likesTable} (${actorColumn}, book_id, liked, likedon)
+            VALUES ($1, $2, $3, NOW()::date);
+          `,
+          [actorId, bookId, liked]
+        );
+      }
 
       const countsResult = await client.query(
         `
           SELECT
             COALESCE(SUM(CASE WHEN liked THEN 1 ELSE 0 END), 0)::int AS likes,
             COALESCE(SUM(CASE WHEN NOT liked THEN 1 ELSE 0 END), 0)::int AS dislikes
-          FROM user_book_likes
+          FROM (
+            SELECT book_id, liked FROM user_book_likes
+            UNION ALL
+            SELECT book_id, liked FROM admin_book_likes
+          ) all_votes
           WHERE book_id = $1;
         `,
         [bookId]
       );
 
-      return countsResult.rows[0];
+      const counts = countsResult.rows[0];
+
+      await client.query(
+        `
+          UPDATE books
+          SET like_dislike = $2
+          WHERE id = $1;
+        `,
+        [bookId, `${counts.likes} Likes / ${counts.dislikes} Dislikes`]
+      );
+
+      return {
+        ...counts,
+        currentVote,
+      };
     }, res);
 
-    return res.json({ message: 'Success', likes: payload.likes, dislikes: payload.dislikes });
+    return res.json({ message: 'Success', likes: payload.likes, dislikes: payload.dislikes, currentVote: payload.currentVote });
   } catch (error) {
     console.error('Error processing like/dislike', error);
     return res.status(500).json({ message: 'Error processing like/dislike' });
@@ -910,6 +1134,12 @@ app.get('/api/books-for-profile', async (req, res) => {
             b.id AS book_id,
             NULL::integer AS author_award_id,
             b.title AS title_of_winning_book,
+            CASE
+              WHEN LOWER(COALESCE(TRIM(b.genre), '')) = 'prose' THEN 'Prose'
+              WHEN LOWER(COALESCE(TRIM(b.genre), '')) = 'poetry' THEN 'Poetry'
+              WHEN COALESCE(TRIM(b.genre), '') = '' THEN 'Unknown'
+              ELSE INITCAP(TRIM(b.genre))
+            END AS prize_genre,
             COALESCE(a.full_name, 'Unknown Author') AS full_name,
             COALESCE(a.given_name, '') AS author_first_name,
             COALESCE(a.last_name, '') AS author_last_name,
@@ -968,6 +1198,7 @@ app.get('/api/books-for-profile', async (req, res) => {
             NULL::integer AS book_id,
             aa.id AS author_award_id,
             'Career Award'::text AS title_of_winning_book,
+            'Unknown'::text AS prize_genre,
             COALESCE(a.full_name, 'Unknown Author') AS full_name,
             COALESCE(a.given_name, '') AS author_first_name,
             COALESCE(a.last_name, '') AS author_last_name,
@@ -1045,6 +1276,7 @@ app.get('/api/books-for-profile', async (req, res) => {
             book_id: book.book_id,
             author_award_id: book.author_award_id,
             clean_title: cleanTitle,
+            prize_genre: book.prize_genre || 'Unknown',
             full_name: book.full_name,
             author_first_name: authorFirstName,
             author_last_name: authorLastName,
@@ -1063,6 +1295,10 @@ app.get('/api/books-for-profile', async (req, res) => {
           existing.book_id = book.book_id;
         }
 
+        if ((existing.prize_genre === 'Unknown' || !existing.prize_genre) && book.prize_genre) {
+          existing.prize_genre = book.prize_genre;
+        }
+
         prizeNames.forEach((name) => existing.prize_names_set.add(name));
         prizeTypes.forEach((name) => existing.prize_types_set.add(name));
       });
@@ -1073,6 +1309,7 @@ app.get('/api/books-for-profile', async (req, res) => {
         book_id: entry.book_id,
         author_award_id: entry.author_award_id,
         clean_title: entry.clean_title,
+        prize_genre: entry.prize_genre || 'Unknown',
         full_name: entry.full_name,
         author_first_name: entry.author_first_name,
         author_last_name: entry.author_last_name,
@@ -1263,6 +1500,7 @@ process.on('unhandledRejection', (reason) => {
 async function startServer() {
   await ensureBookAwardsMapping();
   await ensureAuthorAwardsModel();
+  await ensureLikeDislikeInfrastructure();
 
   const server = app.listen(5000, () => {
     console.log('Server is running on port 5000');

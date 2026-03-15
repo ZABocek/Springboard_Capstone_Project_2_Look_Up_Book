@@ -53,9 +53,9 @@ const Homepage = ({ setIsAuthenticated }) => {
   }, []);
 
   const handleLike = async (bookId, liked) => {
-    const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
 
-    if (!userId) {
+    if (!token) {
       alert('Please log in again before rating books.');
       navigate('/login');
       return;
@@ -72,10 +72,21 @@ const Homepage = ({ setIsAuthenticated }) => {
           'Content-Type': 'application/json',
           ...getAuthHeaders(),
         },
-        body: JSON.stringify({ userId, bookId, liked }),
+        body: JSON.stringify({ bookId, liked }),
       });
 
       const data = await response.json();
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('adminId');
+        localStorage.removeItem('adminUsername');
+        localStorage.removeItem('isAdmin');
+        setIsAuthenticated(false);
+        navigate('/login', { replace: true });
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(data.message || `Network response was not ok: ${response.status}`);
@@ -160,19 +171,29 @@ const Homepage = ({ setIsAuthenticated }) => {
                     : 'Career Award'}
                 </td>
                 <td className="like-dislike-cell">
-                  <img
-                    src={likeIconURL}
-                    alt="Like"
-                    onClick={() => handleLike(book.bookId, true)}
-                    style={{ cursor: 'pointer', marginRight: '10px', height: '50px' }}
-                  />
-                  {book.like_count} Likes / {book.dislike_count} Dislikes
-                  <img
-                    src={dislikeIconURL}
-                    alt="Dislike"
-                    onClick={() => handleLike(book.bookId, false)}
-                    style={{ cursor: 'pointer', height: '50px', marginLeft: '10px' }}
-                  />
+                  {book.prize_type === 'career' || book.bookId == null ? (
+                    'Not Applicable'
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="vote-icon-button"
+                        aria-label="Like this book"
+                        onClick={() => handleLike(book.bookId, true)}
+                      >
+                        <img src={likeIconURL} alt="Like" className="vote-icon" />
+                      </button>
+                      {book.like_count} Likes / {book.dislike_count} Dislikes
+                      <button
+                        type="button"
+                        className="vote-icon-button"
+                        aria-label="Dislike this book"
+                        onClick={() => handleLike(book.bookId, false)}
+                      >
+                        <img src={dislikeIconURL} alt="Dislike" className="vote-icon" />
+                      </button>
+                    </>
+                  )}
                 </td>
                 <td>{book.prize_genre}</td>
                 <td>{book.display_year || book.prize_year || book.publication_year || 'Unknown'}</td>

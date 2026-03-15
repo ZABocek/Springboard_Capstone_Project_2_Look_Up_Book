@@ -1,0 +1,44 @@
+/* LoginSignup.css */
+
+body {
+    font-family: 'Cursive', sans-serif; /* Elegant, cursive font */
+    background-color: #f3f3f3; /* Light grey background */
+    color: #333; /* Dark text for readability */
+}
+
+.container {
+    max-width: 400px; /* Fixed width for the form */
+    margin: auto; /* Center the form */
+    padding: 20px; /* Padding around the form */
+    background-color: #fff; /* White background for the form */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+.input-field {
+    width: 100%; /* Full width */
+    padding: 10px; /* Padding */
+    margin: 10px 0; /* Margin */
+    border: 1px solid #ddd; /* Light grey border */
+    border-radius: 5px; /* Slightly rounded corners */
+}
+
+.button {
+    width: 100%; /* Full width */
+    padding: 10px; /* Padding */
+    background-color: #5cb85c; /* Green background */
+    color: white; /* White text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+.button:hover {
+    background-color: #4cae4c; /* Slightly darker green on hover */
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        width: 90%; /* Full width on smaller screens */
+    }
+}

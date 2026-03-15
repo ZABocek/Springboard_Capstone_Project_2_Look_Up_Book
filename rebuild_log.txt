@@ -1,0 +1,48 @@
+[INFO] DatabaseBuilder initialized
+============================================================
+STARTING DATABASE REBUILD
+============================================================
+[SUCCESS] Connected to database look_up_book_db
+[SUCCESS] Tables recreated successfully
+
+[INFO] Loading HathiTrust data from c:\Users\zaboc\Springboard_Capstone_Project_2_Look_Up_Book-main\Springboard_Capstone_Project_2_Look_Up_Book-main\data\data-fd3921e84d182dea82a7615f0a9dccbaaab6dedd\hathitrust_fiction\hathitrust_post45fiction_metadata.tsv
+[INFO] Loaded 75954 records from HathiTrust
+[SUCCESS] Loaded 30202 authors and 66240 books from HathiTrust
+
+[INFO] Loading NYT metadata from c:\Users\zaboc\Springboard_Capstone_Project_2_Look_Up_Book-main\Springboard_Capstone_Project_2_Look_Up_Book-main\data\data-fd3921e84d182dea82a7615f0a9dccbaaab6dedd\nyt_hardcover_fiction_bestsellers\nyt_hardcover_fiction_bestsellers-hathitrust_metadata.tsv
+[INFO] Loaded 4977 metadata records from NYT
+[INFO] Loading NYT titles from c:\Users\zaboc\Springboard_Capstone_Project_2_Look_Up_Book-main\Springboard_Capstone_Project_2_Look_Up_Book-main\data\data-fd3921e84d182dea82a7615f0a9dccbaaab6dedd\nyt_hardcover_fiction_bestsellers\nyt_hardcover_fiction_bestsellers-titles.tsv
+[INFO] Loaded 7431 title records from NYT
+[SUCCESS] Loaded authors and books from NYT bestsellers
+
+[INFO] Loading major prizes metadata from c:\Users\zaboc\Springboard_Capstone_Project_2_Look_Up_Book-main\Springboard_Capstone_Project_2_Look_Up_Book-main\data\data-fd3921e84d182dea82a7615f0a9dccbaaab6dedd\major_literary_prizes\major_literary_prizes-hathitrust_metadata.tsv
+[INFO] Loaded 5569 metadata records from major prizes
+[INFO] Loading winners/judges from c:\Users\zaboc\Springboard_Capstone_Project_2_Look_Up_Book-main\Springboard_Capstone_Project_2_Look_Up_Book-main\data\data-fd3921e84d182dea82a7615f0a9dccbaaab6dedd\major_literary_prizes\major_literary_prizes-winners_judges.tsv
+[INFO] Loaded 7133 winner/judge records from major prizes
+[SUCCESS] Loaded authors, judges, and books from major prizes
+
+[INFO] Loading Iowa workshop people from c:\Users\zaboc\Springboard_Capstone_Project_2_Look_Up_Book-main\Springboard_Capstone_Project_2_Look_Up_Book-main\data\data-fd3921e84d182dea82a7615f0a9dccbaaab6dedd\iowa_writers_workshop\iowa_writers_workshop-people.tsv
+[INFO] Loaded 3115 people records from Iowa workshop
+[INFO] Loading Iowa workshop metadata from c:\Users\zaboc\Springboard_Capstone_Project_2_Look_Up_Book-main\Springboard_Capstone_Project_2_Look_Up_Book-main\data\data-fd3921e84d182dea82a7615f0a9dccbaaab6dedd\iowa_writers_workshop\iowa_writers_workshop-hathitrust_metadata.tsv
+[INFO] Loaded 1228 metadata records from Iowa workshop
+[SUCCESS] Loaded authors and books from Iowa workshop
+
+[INFO] Total unique authors loaded: 33202
+[INFO] Total unique books loaded: 66240
+[INFO] Total judges loaded: 0
+
+[INFO] Assigning author IDs (sorted by last_name, given_name)...
+[SUCCESS] Assigned IDs to 33202 authors
+
+[INFO] Assigning book IDs (sorted by title)...
+[SUCCESS] Assigned IDs to 66240 books
+
+[INFO] Inserting 33202 authors...
+[SUCCESS] Inserted 33202 authors
+
+[INFO] Inserting 66240 books...
+[ERROR] Failed to insert books: column "prize_name" of relation "books" does not exist
+LINE 4: ...           inferred_date, print_date, prize_year, prize_name...
+                                                             ^
+
+[INFO] Disconnected from database

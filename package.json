@@ -1,0 +1,20 @@
+{
+  "name": "look-up-book",
+  "version": "1.0.0",
+  "description": "Look Up Book - Full Stack Application",
+  "scripts": {
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm start",
+    "server": "cd server && npm start",
+    "client": "cd client && npm start",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "verify:all": "powershell -ExecutionPolicy Bypass -File ./run-all-checks.ps1",
+    "verify:all:verbose": "powershell -ExecutionPolicy Bypass -File ./run-all-checks.ps1 -VerboseServerTests"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/plugin-transform-private-property-in-object": "^7.23.4",
+    "concurrently": "^8.2.2"
+  }
+}

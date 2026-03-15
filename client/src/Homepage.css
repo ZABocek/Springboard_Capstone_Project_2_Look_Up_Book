@@ -1,0 +1,120 @@
+.homepage {
+    text-align: center;
+    font-family: 'Cursive', sans-serif;
+}
+
+.welcome-message, .recommendation-message {
+    color: #333;
+    margin: 20px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    list-style-type: none;
+    padding: 0;
+}
+
+.navbar ul {
+    padding: 0;
+}
+
+.navbar li {
+    display: inline;
+    margin: 0 10px;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #555;
+    font-size: 16px;
+}
+
+@media (max-width: 600px) {
+    .navbar li {
+        display: block;
+        margin: 10px 0;
+    }
+}
+
+.book-table {
+    width: 100%;
+    text-align: center;
+    overflow-x: auto;
+}
+
+.book-table table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.book-table th, .book-table td {
+    border: 1px solid black;
+    padding: 10px;
+    text-align: left;
+}
+
+/* Set specific column widths */
+.book-table th:nth-child(1), .book-table td:nth-child(1) { /* Title */
+    width: 20%;
+    max-width: 250px;
+    word-wrap: break-word;
+}
+
+.book-table th:nth-child(2), .book-table td:nth-child(2) { /* Like/Dislike */
+    width: 20%;
+    min-width: 150px;
+}
+
+.book-table th:nth-child(3), .book-table td:nth-child(3) { /* Genre */
+    width: 8%;
+    min-width: 80px;
+}
+
+.book-table th:nth-child(4), .book-table td:nth-child(4) { /* Year */
+    width: 8%;
+    min-width: 60px;
+}
+
+.book-table th:nth-child(5), .book-table td:nth-child(5) { /* Verified */
+    width: 8%;
+    min-width: 60px;
+}
+
+.book-table th:nth-child(6), .book-table td:nth-child(6) { /* Author ID */
+    width: 8%;
+    min-width: 70px;
+}
+
+.book-table th:nth-child(7), .book-table td:nth-child(7) { /* Award */
+    width: 16%;
+    min-width: 180px;
+}
+
+.book-table th:nth-child(8), .book-table td:nth-child(8) { /* Award Type */
+    width: 12%;
+    min-width: 140px;
+}
+
+.title-cell {
+    max-height: 80px;
+    overflow-y: auto;
+    word-break: break-word;
+}
+
+.like-dislike-cell {
+    text-align: center;
+    white-space: normal;
+}
+
+.book-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+/* An elegant and widely supported font */
+.book-table {
+    font-family: 'Arial', sans-serif;
+}
+

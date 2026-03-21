@@ -1,7 +1,8 @@
 const rawBaseUrl = (process.env.REACT_APP_API_BASE_URL || '').trim();
-const devFallbackBaseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+const isLocalHost = typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
+const localFallbackBaseUrl = isLocalHost ? 'http://localhost:5000' : '';
 
-export const API_BASE_URL = (rawBaseUrl || devFallbackBaseUrl).replace(/\/+$/, '');
+export const API_BASE_URL = (rawBaseUrl || localFallbackBaseUrl).replace(/\/+$/, '');
 
 export function buildApiUrl(path) {
   if (!path) {

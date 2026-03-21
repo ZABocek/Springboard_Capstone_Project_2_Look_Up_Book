@@ -34,21 +34,20 @@ const SearchBooks = () => {
       setLoading(true);
 
       try {
-        const response = await fetch(buildApiUrl('/api/books-for-profile'));
+        const response = await fetch(buildApiUrl('/api/search-books-award-winners'));
 
         if (!response.ok) {
           throw new Error('Unable to load books.');
         }
 
         const data = await response.json();
-        const nonCareerBooks = data
+        const awardWinningBooks = data
           .filter((book) => {
-            const hasAuthorAwardId = book.author_award_id !== null && book.author_award_id !== undefined;
-            const entryType = (book.entry_type || (hasAuthorAwardId ? 'career' : 'book')).toLowerCase();
-            const authorAwardScope = (book.author_award_scope || 'book').toLowerCase();
-            const title = (book.title_of_winning_book || book.clean_title || '').trim().toLowerCase();
+            const title = (book.clean_title || '').trim().toLowerCase();
+            const prizeName = (book.prize_name || '').trim().toLowerCase();
+            const prizeYear = (book.prize_year || '').toString().trim();
 
-            return book.book_id != null && entryType !== 'career' && authorAwardScope !== 'career' && title !== 'career award';
+            return book.book_id != null && title !== '' && title !== 'career award' && prizeName !== '' && prizeName !== 'n/a' && prizeYear !== '';
           })
           .sort((a, b) => {
             const lastNameA = (a.author_last_name || '').toLowerCase();
@@ -66,7 +65,7 @@ const SearchBooks = () => {
             return (a.clean_title || '').localeCompare(b.clean_title || '', undefined, { sensitivity: 'base' });
           });
 
-        setBooks(nonCareerBooks);
+        setBooks(awardWinningBooks);
       } catch (error) {
         console.error('Error fetching books:', error);
       } finally {
@@ -410,7 +409,7 @@ const SearchBooks = () => {
           <div className="books-list">
             {visibleBooks.length > 0 ? (
               visibleBooks.map((book) => (
-                <div key={book.book_id} className="book-item">
+                <div key={`${book.book_id}-${book.prize_name}-${book.prize_year}`} className="book-item">
                   <strong>{book.clean_title || book.title_of_winning_book || 'Untitled'}</strong>
                   <div>{book.prize_name ? `Prize: ${book.prize_name}` : 'Prize: Unknown'}</div>
                   <div>{book.prize_genre ? `Genre: ${book.prize_genre}` : 'Genre: Unknown'}</div>

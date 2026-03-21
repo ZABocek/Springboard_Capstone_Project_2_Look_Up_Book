@@ -278,7 +278,7 @@ def main() -> None:
             if not title:
                 continue
 
-            full_name = clean_text(row.get("author") or row.get("full_name") or "")
+            full_name = clean_text(row.get("full_name") or row.get("author") or "")
             given_name = clean_text(row.get("given_name") or "")
             last_name = clean_text(row.get("last_name") or row.get("family_name") or "")
 

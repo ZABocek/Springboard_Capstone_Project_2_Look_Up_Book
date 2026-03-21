@@ -19,6 +19,10 @@ function LoginSignup({ setIsAuthenticated }) {
   const [registerName, setRegisterName] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [isAdminLogin, setIsAdminLogin] = useState(false);
+  const [isAdminRegister, setIsAdminRegister] = useState(false);
+  const [adminRegisterEmail, setAdminRegisterEmail] = useState('');
+  const [adminRegisterPassword, setAdminRegisterPassword] = useState('');
+  const [adminRegisterUsername, setAdminRegisterUsername] = useState('');
   const navigate = useNavigate();
 
   const finishLogin = ({ token, userId, adminId, username, adminUsername, admin = false }) => {
@@ -28,7 +32,11 @@ function LoginSignup({ setIsAuthenticated }) {
       localStorage.setItem('adminId', adminId);
       localStorage.setItem('adminUsername', adminUsername || username || loginName.trim());
       localStorage.setItem('isAdmin', 'true');
-      localStorage.removeItem('userId');
+      if (userId) {
+        localStorage.setItem('userId', userId);
+      } else {
+        localStorage.removeItem('userId');
+      }
     } else {
       localStorage.setItem('userId', userId);
       localStorage.removeItem('adminId');
@@ -73,6 +81,7 @@ function LoginSignup({ setIsAuthenticated }) {
         finishLogin({
           token: data.token,
           adminId: data.adminId,
+          userId: data.userId,
           adminUsername: loginName.trim(),
           admin: true,
         });
@@ -85,6 +94,45 @@ function LoginSignup({ setIsAuthenticated }) {
       }
     } catch (error) {
       alert(`Error logging in: ${error.message}`);
+    }
+  };
+
+  const onAdminRegisterSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!adminRegisterEmail.trim() || !adminRegisterPassword.trim()) {
+      alert('Please provide both admin email and password.');
+      return;
+    }
+
+    try {
+      const response = await fetch(buildApiUrl('/admin/register'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: adminRegisterEmail.trim(),
+          password: adminRegisterPassword,
+          username: adminRegisterUsername.trim() || undefined,
+        }),
+      });
+
+      const data = await parseJsonSafely(response);
+
+      if (!response.ok) {
+        throw new Error(data.message || `Server error: ${response.status}`);
+      }
+
+      finishLogin({
+        token: data.token,
+        adminId: data.adminId,
+        userId: data.userId,
+        adminUsername: data.username || adminRegisterUsername.trim() || adminRegisterEmail.trim(),
+        admin: true,
+      });
+    } catch (error) {
+      alert(`Error creating admin account: ${error.message}`);
     }
   };
 
@@ -132,28 +180,64 @@ function LoginSignup({ setIsAuthenticated }) {
   if (isAdminLogin) {
     return (
       <div>
-        <h1>Administrator Login</h1>
-        <form onSubmit={onLoginSubmit}>
-          <input
-            type="text"
-            placeholder="Admin Username"
-            value={loginName}
-            onChange={(e) => setLoginName(e.target.value)}
-            autoComplete="username"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={loginPassword}
-            onChange={(e) => setLoginPassword(e.target.value)}
-            autoComplete="current-password"
-          />
-          <button type="submit">Login as Admin</button>
-        </form>
+        <h1>{isAdminRegister ? 'Create Administrator Account' : 'Administrator Login'}</h1>
+        {isAdminRegister ? (
+          <form onSubmit={onAdminRegisterSubmit}>
+            <input
+              type="email"
+              placeholder="Admin Email"
+              value={adminRegisterEmail}
+              onChange={(e) => setAdminRegisterEmail(e.target.value)}
+              autoComplete="email"
+            />
+            <input
+              type="text"
+              placeholder="Admin Username (optional)"
+              value={adminRegisterUsername}
+              onChange={(e) => setAdminRegisterUsername(e.target.value)}
+              autoComplete="username"
+            />
+            <input
+              type="password"
+              placeholder="New Admin Password"
+              value={adminRegisterPassword}
+              onChange={(e) => setAdminRegisterPassword(e.target.value)}
+              autoComplete="new-password"
+            />
+            <button type="submit">Create Admin Account</button>
+          </form>
+        ) : (
+          <form onSubmit={onLoginSubmit}>
+            <input
+              type="text"
+              placeholder="Admin Username or Email"
+              value={loginName}
+              onChange={(e) => setLoginName(e.target.value)}
+              autoComplete="username"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+            <button type="submit">Login as Admin</button>
+          </form>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setIsAdminRegister((current) => !current)}
+        >
+          {isAdminRegister ? 'I already have an admin account' : 'Need to create a new admin account?'}
+        </button>
+
         <button
           type="button"
           onClick={() => {
             setIsAdminLogin(false);
+            setIsAdminRegister(false);
             setLoginPassword('');
           }}
         >

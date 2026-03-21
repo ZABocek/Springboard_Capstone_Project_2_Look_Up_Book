@@ -4,6 +4,7 @@ import { buildApiUrl, getAuthHeaders } from './api';
 import './Profile.css';
 
 function Profile({ userId }) {
+  const [effectiveUserId, setEffectiveUserId] = useState(userId || localStorage.getItem('userId') || '');
   const [username, setUsername] = useState('');
   const [readingPreference, setReadingPreference] = useState('');
   const [favoriteGenre, setFavoriteGenre] = useState('');
@@ -26,14 +27,57 @@ function Profile({ userId }) {
   };
 
   useEffect(() => {
-    if (!userId) {
-      navigate('/login');
+    let isMounted = true;
+
+    const resolveUser = async () => {
+      let resolvedUserId = userId || localStorage.getItem('userId') || '';
+
+      if (!resolvedUserId && localStorage.getItem('isAdmin') === 'true') {
+        try {
+          const profileUserResponse = await fetch(buildApiUrl('/admin/profile-user'), {
+            headers: {
+              ...getAuthHeaders(),
+            },
+          });
+
+          if (profileUserResponse.ok) {
+            const profileUserData = await profileUserResponse.json();
+            resolvedUserId = String(profileUserData.userId || '');
+
+            if (resolvedUserId) {
+              localStorage.setItem('userId', resolvedUserId);
+            }
+          }
+        } catch (error) {
+          console.error('Unable to resolve admin profile user:', error);
+        }
+      }
+
+      if (!resolvedUserId) {
+        navigate('/login');
+        return;
+      }
+
+      if (isMounted) {
+        setEffectiveUserId(resolvedUserId);
+      }
+    };
+
+    resolveUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate, userId]);
+
+  useEffect(() => {
+    if (!effectiveUserId) {
       return;
     }
 
     const fetchPreferences = async () => {
       try {
-        const response = await fetch(buildApiUrl(`/api/user/preference/${userId}`), {
+        const response = await fetch(buildApiUrl(`/api/user/preference/${effectiveUserId}`), {
           headers: {
             ...getAuthHeaders(),
           },
@@ -53,16 +97,16 @@ function Profile({ userId }) {
     };
 
     fetchPreferences();
-  }, [navigate, userId]);
+  }, [effectiveUserId]);
 
   useEffect(() => {
-    if (!userId) {
+    if (!effectiveUserId) {
       return;
     }
 
     const fetchPreferredBooks = async () => {
       try {
-        const response = await fetch(buildApiUrl(`/api/user/${userId}/preferred-books`), {
+        const response = await fetch(buildApiUrl(`/api/user/${effectiveUserId}/preferred-books`), {
           headers: {
             ...getAuthHeaders(),
           },
@@ -80,7 +124,7 @@ function Profile({ userId }) {
     };
 
     fetchPreferredBooks();
-  }, [userId]);
+  }, [effectiveUserId]);
 
   const updatePreferences = async () => {
     try {
@@ -90,7 +134,7 @@ function Profile({ userId }) {
           'Content-Type': 'application/json',
           ...getAuthHeaders(),
         },
-        body: JSON.stringify({ userId, readingPreference, favoriteGenre }),
+        body: JSON.stringify({ userId: effectiveUserId, readingPreference, favoriteGenre }),
       });
 
       if (!response.ok) {
@@ -112,7 +156,7 @@ function Profile({ userId }) {
           ...getAuthHeaders(),
         },
         body: JSON.stringify({
-          userId,
+          userId: effectiveUserId,
           entryType: book.preference_type,
           entryId: book.preference_id,
           bookId: book.book_id,

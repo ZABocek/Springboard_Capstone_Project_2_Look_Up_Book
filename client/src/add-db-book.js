@@ -5,6 +5,8 @@ import { buildApiUrl, getAuthHeaders } from './api';
 
 function AddDbBook({ userId }) {
   const [books, setBooks] = useState([]);
+  const [effectiveUserId, setEffectiveUserId] = useState(userId || localStorage.getItem('userId') || '');
+  const [loadError, setLoadError] = useState('');
   const [selectedEntryValue, setSelectedEntryValue] = useState('');
   const [selectedLetter, setSelectedLetter] = useState('');
   const [selectedPrefix, setSelectedPrefix] = useState('');
@@ -31,20 +33,55 @@ function AddDbBook({ userId }) {
   };
 
   useEffect(() => {
-    if (!userId) {
-      navigate('/login');
-      return;
-    }
+    let isMounted = true;
 
-    setLoading(true);
-    fetch(buildApiUrl('/api/books-for-profile'))
-      .then((response) => {
+    const initialize = async () => {
+      let resolvedUserId = userId || localStorage.getItem('userId') || '';
+
+      if (!resolvedUserId && localStorage.getItem('isAdmin') === 'true') {
+        try {
+          const profileUserResponse = await fetch(buildApiUrl('/admin/profile-user'), {
+            headers: {
+              ...getAuthHeaders(),
+            },
+          });
+
+          if (profileUserResponse.ok) {
+            const profileUserData = await profileUserResponse.json();
+            resolvedUserId = String(profileUserData.userId || '');
+
+            if (resolvedUserId) {
+              localStorage.setItem('userId', resolvedUserId);
+            }
+          }
+        } catch (error) {
+          console.error('Unable to resolve admin profile user:', error);
+        }
+      }
+
+      if (!resolvedUserId) {
+        navigate('/login');
+        return;
+      }
+
+      if (isMounted) {
+        setEffectiveUserId(resolvedUserId);
+      }
+
+      setLoading(true);
+      setLoadError('');
+
+      try {
+        const response = await fetch(buildApiUrl('/api/books-for-profile'));
+
         if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Your session has expired. Please log in again.');
+          }
           throw new Error('Failed to fetch books.');
         }
-        return response.json();
-      })
-      .then((data) => {
+
+        const data = await response.json();
         const sortedBooks = [...data].sort((a, b) => {
           const lastNameA = (a.author_last_name || '').toLowerCase();
           const lastNameB = (b.author_last_name || '').toLowerCase();
@@ -62,13 +99,26 @@ function AddDbBook({ userId }) {
           return (a.clean_title || '').localeCompare(b.clean_title || '', undefined, { sensitivity: 'base' });
         });
 
-        setBooks(sortedBooks);
-        setLoading(false);
-      })
-      .catch((error) => {
+        if (isMounted) {
+          setBooks(sortedBooks);
+        }
+      } catch (error) {
         console.error('Error fetching books:', error);
-        setLoading(false);
-      });
+        if (isMounted) {
+          setLoadError(error.message || 'Unable to load books from the database right now.');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initialize();
+
+    return () => {
+      isMounted = false;
+    };
   }, [navigate, userId]);
 
   const indexedBooks = useMemo(
@@ -285,7 +335,7 @@ function AddDbBook({ userId }) {
           ...getAuthHeaders(),
         },
         body: JSON.stringify({
-          userId,
+          userId: effectiveUserId,
           entryType,
           entryId,
           bookId: entryType === 'book' ? entryId : null,
@@ -317,6 +367,24 @@ function AddDbBook({ userId }) {
     return (
       <div className="add-db-book-container">
         <p>Loading books...</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="add-db-book-container">
+        <h1>Add a Book to Your Profile</h1>
+        <p className="subtitle">Unable to load entries from the database.</p>
+        <p role="alert" style={{ color: '#b42318', fontWeight: 600 }}>{loadError}</p>
+        <div className="navigation-buttons">
+          <button onClick={() => window.location.reload()} className="nav-button">
+            Retry
+          </button>
+          <button onClick={() => navigate('/homepage')} className="nav-button">
+            Back to Homepage
+          </button>
+        </div>
       </div>
     );
   }

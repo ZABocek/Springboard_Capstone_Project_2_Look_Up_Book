@@ -190,6 +190,26 @@ class APITester:
         except Exception as e:
             self.log_result("Get Books for Profile", "FAIL", str(e))
             return False
+
+    def test_get_search_books_award_winners(self):
+        """Test: GET /api/search-books-award-winners - Get award-winning books for search page"""
+        try:
+            response = self.session.get(f"{self.base_url}/api/search-books-award-winners")
+            data = response.json()
+
+            if response.status_code == 200:
+                self.log_result(
+                    "Get Search Books Award Winners",
+                    "PASS",
+                    f"Retrieved {len(data)} award-winning book rows"
+                )
+                return True
+            else:
+                self.log_result("Get Search Books Award Winners", "FAIL", f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_result("Get Search Books Award Winners", "FAIL", str(e))
+            return False
     
     def test_signup(self):
         """Test: POST /signup - User signup"""

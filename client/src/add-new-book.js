@@ -7,10 +7,6 @@ const AddNewBook = () => {
     fullName: '',
     givenName: '',
     lastName: '',
-    gender: '',
-    eliteInstitution: '',
-    graduateDegree: '',
-    mfaDegree: '',
     prizeYear: '',
     prizeGenre: '',
     titleOfWinningBook: '',
@@ -22,7 +18,7 @@ const AddNewBook = () => {
   useEffect(() => {
     const fetchAwards = async () => {
       try {
-        const response = await fetch(buildApiUrl('/api/awards'));
+        const response = await fetch(buildApiUrl('/api/book-awards'));
 
         if (!response.ok) {
           throw new Error('Failed to fetch awards.');
@@ -83,29 +79,17 @@ const AddNewBook = () => {
     <div>
       <h1>Submit New Award-Winning Book for Verification</h1>
       <form onSubmit={handleSubmit}>
-        <label>Author&apos;s Full Name:</label>
-        <input type="text" name="fullName" value={bookDetails.fullName} onChange={handleChange} required />
+        <label htmlFor="new-book-full-name">Author&apos;s Full Name:</label>
+        <input id="new-book-full-name" type="text" name="fullName" value={bookDetails.fullName} onChange={handleChange} required />
 
-        <label>Author&apos;s Given Name:</label>
-        <input type="text" name="givenName" value={bookDetails.givenName} onChange={handleChange} required />
+        <label htmlFor="new-book-given-name">Author&apos;s Given Name:</label>
+        <input id="new-book-given-name" type="text" name="givenName" value={bookDetails.givenName} onChange={handleChange} required />
 
-        <label>Author&apos;s Last Name:</label>
-        <input type="text" name="lastName" value={bookDetails.lastName} onChange={handleChange} required />
+        <label htmlFor="new-book-last-name">Author&apos;s Last Name:</label>
+        <input id="new-book-last-name" type="text" name="lastName" value={bookDetails.lastName} onChange={handleChange} required />
 
-        <label>Author&apos;s Desired Gender (please type female, male, or nonbinary):</label>
-        <input type="text" name="gender" value={bookDetails.gender} onChange={handleChange} required />
-
-        <label>Exceptional University Author Went To (If They Went To An Elite Institution):</label>
-        <input type="text" name="eliteInstitution" value={bookDetails.eliteInstitution} onChange={handleChange} />
-
-        <label>Graduate Degree? (please fill with word &quot;graduate&quot; if so):</label>
-        <input type="text" name="graduateDegree" value={bookDetails.graduateDegree} onChange={handleChange} />
-
-        <label>Master of Fine Arts Degree? (please enter where they got their Master&apos;s, if so):</label>
-        <input type="text" name="mfaDegree" value={bookDetails.mfaDegree} onChange={handleChange} />
-
-        <label>Prize Name:</label>
-        <select name="awardId" value={bookDetails.awardId} onChange={handleChange} required>
+        <label htmlFor="new-book-award">Prize Name:</label>
+        <select id="new-book-award" name="awardId" value={bookDetails.awardId} onChange={handleChange} required>
           <option value="">Select an Award</option>
           {awards.map((award) => (
             <option key={award.award_id} value={award.award_id}>
@@ -114,18 +98,19 @@ const AddNewBook = () => {
           ))}
         </select>
 
-        <label>Year Book Won The Award:</label>
-        <input type="number" name="prizeYear" value={bookDetails.prizeYear} onChange={handleChange} required />
+        <label htmlFor="new-book-prize-year">Year Book Won The Award:</label>
+        <input id="new-book-prize-year" type="number" name="prizeYear" value={bookDetails.prizeYear} onChange={handleChange} required />
 
-        <label>Prize Genre (Prose or Poetry):</label>
-        <select name="prizeGenre" value={bookDetails.prizeGenre} onChange={handleChange} required>
+        <label htmlFor="new-book-prize-genre">Prize Genre (Prose or Poetry):</label>
+        <select id="new-book-prize-genre" name="prizeGenre" value={bookDetails.prizeGenre} onChange={handleChange} required>
           <option value="">Select Genre</option>
           <option value="prose">Prose</option>
           <option value="poetry">Poetry</option>
         </select>
 
-        <label>Title of Winning Book:</label>
+        <label htmlFor="new-book-title">Title of Winning Book:</label>
         <input
+          id="new-book-title"
           type="text"
           name="titleOfWinningBook"
           value={bookDetails.titleOfWinningBook}

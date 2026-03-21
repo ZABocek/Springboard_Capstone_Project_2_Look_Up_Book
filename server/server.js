@@ -106,6 +106,39 @@ async function withClient(handler, res) {
   }
 }
 
+async function resolveOrCreateUserIdForAdmin(adminRecord, passwordHashFallback, res) {
+  if (!adminRecord?.email) {
+    return null;
+  }
+
+  try {
+    return await withClient(async (client) => {
+      const normalizedEmail = adminRecord.email.trim().toLowerCase();
+      const existing = await client.query('SELECT id FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
+
+      if (existing.rows[0]) {
+        return existing.rows[0].id;
+      }
+
+      const safeUsername = `admin_${adminRecord.id}_${adminRecord.username || 'user'}`;
+      const inserted = await client.query(
+        'INSERT INTO users (username, email, hash) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id',
+        [safeUsername, normalizedEmail, passwordHashFallback || 'admin_profile_link']
+      );
+
+      if (inserted.rows[0]) {
+        return inserted.rows[0].id;
+      }
+
+      const retry = await client.query('SELECT id FROM users WHERE LOWER(email) = $1', [normalizedEmail]);
+      return retry.rows[0]?.id || null;
+    }, res);
+  } catch (error) {
+    console.error('Admin user-link error (non-fatal):', error.message);
+    return null;
+  }
+}
+
 async function ensureBookAwardsMapping() {
   const client = await pool.connect();
 
@@ -322,6 +355,17 @@ async function ensureLikeDislikeInfrastructure() {
     `);
 
     await client.query(`
+      ALTER TABLE public.admins
+      ADD COLUMN IF NOT EXISTS email VARCHAR(255);
+    `);
+
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_admins_email_unique
+      ON public.admins ((LOWER(email)))
+      WHERE email IS NOT NULL;
+    `);
+
+    await client.query(`
       DO $$
       BEGIN
         IF EXISTS (
@@ -334,6 +378,26 @@ async function ensureLikeDislikeInfrastructure() {
           UPDATE public.admins
           SET password_hash = COALESCE(NULLIF(password_hash, ''), password)
           WHERE password_hash IS NULL OR password_hash = '';
+        END IF;
+      END
+      $$;
+    `);
+
+    await client.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND table_name = 'admins'
+            AND column_name = 'password'
+        ) THEN
+          UPDATE public.admins
+          SET password = COALESCE(NULLIF(password, ''), password_hash)
+          WHERE password IS NULL OR TRIM(password) = '';
+
+          EXECUTE 'ALTER TABLE public.admins ALTER COLUMN password DROP NOT NULL';
         END IF;
       END
       $$;
@@ -459,7 +523,17 @@ app.post('/admin/login', async (req, res) => {
 
   try {
     const admin = await withClient(async (client) => {
-      const result = await client.query('SELECT * FROM admins WHERE username = $1', [username.trim()]);
+      const result = await client.query(
+        `
+          SELECT *
+          FROM admins
+          WHERE LOWER(username) = LOWER($1)
+             OR LOWER(COALESCE(email, '')) = LOWER($1)
+          ORDER BY id
+          LIMIT 1;
+        `,
+        [username.trim()]
+      );
       return result.rows[0] || null;
     }, res);
 
@@ -473,11 +547,96 @@ app.post('/admin/login', async (req, res) => {
       return res.status(400).json({ message: 'Wrong credentials' });
     }
 
+    const userId = await resolveOrCreateUserIdForAdmin(admin, admin.password_hash, res);
+
     const token = jwt.sign({ id: admin.id, isAdmin: true }, jwtSecret, { expiresIn: '2h' });
-    return res.json({ token, adminId: admin.id });
+    return res.json({ token, adminId: admin.id, userId: userId || null, username: admin.username, email: admin.email || null });
   } catch (err) {
     console.error('Admin login error:', err);
     return res.status(500).json({ message: 'Error logging in as admin' });
+  }
+});
+
+app.post('/admin/register', async (req, res) => {
+  const { email, password, username } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
+    const createdAdmin = await withClient(async (client) => {
+      const adminCountResult = await client.query('SELECT COUNT(*)::int AS admin_count FROM admins');
+      const adminCount = adminCountResult.rows[0]?.admin_count || 0;
+
+      if (adminCount > 0) {
+        return { blocked: true };
+      }
+
+      const resolvedUsername = (username || email.split('@')[0] || '').trim();
+
+      if (!resolvedUsername) {
+        throw new Error('A valid username could not be determined for the new admin account.');
+      }
+
+      const hash = await bcrypt.hash(password, 10);
+      const hasLegacyPasswordColumnResult = await client.query(
+        `
+          SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'admins'
+              AND column_name = 'password'
+          ) AS has_legacy_password_column;
+        `
+      );
+
+      const hasLegacyPasswordColumn = hasLegacyPasswordColumnResult.rows[0]?.has_legacy_password_column;
+
+      const result = hasLegacyPasswordColumn
+        ? await client.query(
+          `
+            INSERT INTO admins (username, email, password, password_hash)
+            VALUES ($1, $2, $3, $3)
+            RETURNING id, username, email;
+          `,
+          [resolvedUsername, email.trim().toLowerCase(), hash]
+        )
+        : await client.query(
+          'INSERT INTO admins (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email',
+          [resolvedUsername, email.trim().toLowerCase(), hash]
+        );
+
+      return { blocked: false, admin: result.rows[0], passwordHash: hash };
+    }, res);
+
+    if (createdAdmin.blocked) {
+      return res.status(403).json({ message: 'Admin registration is closed because an admin account already exists.' });
+    }
+
+    const userId = await resolveOrCreateUserIdForAdmin(
+      createdAdmin.admin,
+      createdAdmin.passwordHash,
+      res
+    );
+
+    const token = jwt.sign({ id: createdAdmin.admin.id, isAdmin: true }, jwtSecret, { expiresIn: '2h' });
+    return res.status(201).json({
+      token,
+      adminId: createdAdmin.admin.id,
+      userId: userId || null,
+      username: createdAdmin.admin.username,
+      email: createdAdmin.admin.email,
+    });
+  } catch (error) {
+    console.error('Admin registration error:', error);
+
+    if (error.code === '23505') {
+      return res.status(400).json({ message: 'Admin username or email already exists.' });
+    }
+
+    return res.status(500).json({ message: 'Error creating admin account' });
   }
 });
 
@@ -505,6 +664,33 @@ app.get('/api/is-admin/:userId', requireAdmin, async (req, res) => {
   }
 });
 
+app.get('/admin/profile-user', requireAdmin, async (req, res) => {
+  try {
+    const admin = await withClient(async (client) => {
+      const result = await client.query(
+        'SELECT id, username, email, password_hash FROM admins WHERE id = $1 LIMIT 1',
+        [req.user.id]
+      );
+      return result.rows[0] || null;
+    }, res);
+
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    const userId = await resolveOrCreateUserIdForAdmin(admin, admin.password_hash, res);
+
+    if (!userId) {
+      return res.status(500).json({ message: 'Unable to resolve admin profile user' });
+    }
+
+    return res.json({ userId });
+  } catch (error) {
+    console.error('Error resolving admin profile user:', error);
+    return res.status(500).json({ message: 'Error resolving admin profile user' });
+  }
+});
+
 app.get('/api/unverified-books', requireAdmin, async (req, res) => {
   try {
     const rows = await withClient(async (client) => {
@@ -516,6 +702,7 @@ app.get('/api/unverified-books', requireAdmin, async (req, res) => {
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.id
         WHERE b.verified = false
+          AND b.source = 'user_submitted'
           AND b.title IS NOT NULL
           AND b.title <> ''
         ORDER BY b.prize_year DESC NULLS LAST, b.id DESC;
@@ -541,11 +728,26 @@ app.patch('/api/books/:bookId/verification', requireAdmin, async (req, res) => {
 
   try {
     const rowCount = await withClient(async (client) => {
-      const result = await client.query(
-        'UPDATE books SET verified = $1 WHERE id = $2',
-        [verified, Number(bookId)]
+      if (verified) {
+        const result = await client.query(
+          `
+            UPDATE books
+            SET verified = true,
+                role = CASE WHEN role IN ('author', 'pending') THEN 'winner' ELSE role END
+            WHERE id = $1
+              AND source = 'user_submitted';
+          `,
+          [Number(bookId)]
+        );
+        return result.rowCount;
+      }
+
+      const deleteResult = await client.query(
+        'DELETE FROM books WHERE id = $1 AND source = $2',
+        [Number(bookId), 'user_submitted']
       );
-      return result.rowCount;
+
+      return deleteResult.rowCount;
     }, res);
 
     if (rowCount === 0) {
@@ -556,6 +758,58 @@ app.patch('/api/books/:bookId/verification', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error updating book verification status:', error);
     return res.status(500).json({ message: 'Error updating book verification status' });
+  }
+});
+
+app.get('/api/verified-submitted-books', requireAdmin, async (req, res) => {
+  try {
+    const rows = await withClient(async (client) => {
+      const result = await client.query(`
+        SELECT
+          b.id AS "bookId",
+          b.title AS "titleOfWinningBook",
+          COALESCE(a.full_name, CONCAT_WS(' ', a.given_name, a.last_name), 'Unknown') AS "fullName",
+          b.prize_year AS "prizeYear",
+          COALESCE(aw.prize_name, 'N/A') AS "prizeName"
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.id
+        LEFT JOIN awards aw ON aw.id = b.award_id
+        WHERE b.verified = true
+          AND b.source = 'user_submitted'
+        ORDER BY b.prize_year DESC NULLS LAST, b.id DESC;
+      `);
+
+      return result.rows;
+    }, res);
+
+    return res.json(rows);
+  } catch (error) {
+    console.error('Error fetching verified submitted books:', error);
+    return res.status(500).json({ message: 'Error fetching verified submitted books' });
+  }
+});
+
+app.delete('/api/admin/books/:bookId', requireAdmin, async (req, res) => {
+  const { bookId } = req.params;
+
+  try {
+    const rowCount = await withClient(async (client) => {
+      const result = await client.query(
+        'DELETE FROM books WHERE id = $1 AND source = $2',
+        [Number(bookId), 'user_submitted']
+      );
+
+      return result.rowCount;
+    }, res);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+
+    return res.json({ message: 'Book removed successfully' });
+  } catch (error) {
+    console.error('Error removing submitted book:', error);
+    return res.status(500).json({ message: 'Error removing submitted book' });
   }
 });
 
@@ -574,11 +828,34 @@ app.post('/api/submit-book', authenticateToken, async (req, res) => {
     return res.status(400).json({ message: 'Missing required book submission fields' });
   }
 
+  const parsedAwardId = Number(awardId);
+  if (!Number.isInteger(parsedAwardId) || parsedAwardId <= 0) {
+    return res.status(400).json({ message: 'A valid book award must be selected.' });
+  }
+
+  const parsedPrizeYear = prizeYear == null || prizeYear === '' ? null : Number(prizeYear);
+  if (parsedPrizeYear !== null && !Number.isInteger(parsedPrizeYear)) {
+    return res.status(400).json({ message: 'Prize year must be a whole number.' });
+  }
+
   try {
     const insertedBook = await withClient(async (client) => {
       await client.query('BEGIN');
 
       try {
+        const awardCheckResult = await client.query(
+          'SELECT id, prize_type FROM awards WHERE id = $1 LIMIT 1',
+          [parsedAwardId]
+        );
+
+        if (awardCheckResult.rows.length === 0) {
+          throw new Error('Selected award does not exist.');
+        }
+
+        if ((awardCheckResult.rows[0].prize_type || '').toLowerCase() === 'career') {
+          throw new Error('Only book awards can be used when submitting a book.');
+        }
+
         const existingAuthorResult = await client.query(
           `
             SELECT id
@@ -596,21 +873,25 @@ app.post('/api/submit-book', authenticateToken, async (req, res) => {
         if (existingAuthorResult.rows.length > 0) {
           authorId = existingAuthorResult.rows[0].id;
         } else {
+          const nextAuthorIdResult = await client.query('SELECT COALESCE(MAX(id), 0) + 1 AS id FROM authors');
+          const newAuthorId = nextAuthorIdResult.rows[0].id;
           const authorResult = await client.query(
-            'INSERT INTO authors (given_name, last_name, full_name) VALUES ($1, $2, $3) RETURNING id',
-            [givenName.trim(), lastName.trim(), fullName.trim()]
+            'INSERT INTO authors (id, given_name, last_name, full_name) VALUES ($1, $2, $3, $4) RETURNING id',
+            [newAuthorId, givenName.trim(), lastName.trim(), fullName.trim()]
           );
           authorId = authorResult.rows[0].id;
         }
 
+        const nextBookRowIdResult = await client.query('SELECT COALESCE(MAX(id), 0) + 1 AS id FROM books');
+        const rowId = nextBookRowIdResult.rows[0].id;
         const bookId = await generateUniqueId(client);
         const result = await client.query(
           `
-            INSERT INTO books (book_id, title, author_id, prize_year, genre, verified, role, source, award_id)
-            VALUES ($1, $2, $3, $4, $5, false, 'author', 'user_submitted', $6)
+            INSERT INTO books (id, book_id, title, author_id, prize_year, genre, verified, role, source, award_id)
+            VALUES ($1, $2, $3, $4, $5, $6, false, 'pending', 'user_submitted', $7)
             RETURNING *;
           `,
-          [bookId, titleOfWinningBook.trim(), authorId, prizeYear || null, prizeGenre || null, awardId]
+          [rowId, bookId, titleOfWinningBook.trim(), authorId, parsedPrizeYear, prizeGenre || null, parsedAwardId]
         );
 
         await client.query(
@@ -619,7 +900,7 @@ app.post('/api/submit-book', authenticateToken, async (req, res) => {
             VALUES ($1, $2)
             ON CONFLICT (book_id, award_id) DO NOTHING;
           `,
-          [result.rows[0].id, Number(awardId)]
+          [result.rows[0].id, parsedAwardId]
         );
 
         await client.query('COMMIT');
@@ -633,6 +914,11 @@ app.post('/api/submit-book', authenticateToken, async (req, res) => {
     return res.json(insertedBook);
   } catch (error) {
     console.error('Error submitting new book for verification:', error);
+
+    if (error.message === 'Selected award does not exist.' || error.message === 'Only book awards can be used when submitting a book.') {
+      return res.status(400).json({ message: error.message });
+    }
+
     return res.status(500).json({ message: 'Error submitting new book for verification' });
   }
 });
@@ -866,6 +1152,41 @@ app.get('/api/awards', async (req, res) => {
   } catch (error) {
     console.error('Error fetching awards:', error);
     return res.status(500).json({ message: 'Error fetching awards' });
+  }
+});
+
+app.get('/api/book-awards', async (req, res) => {
+  try {
+    const rows = await withClient(async (client) => {
+      const result = await client.query(`
+        SELECT
+          a.id AS award_id,
+          a.prize_name,
+          a.prize_type,
+          COALESCE(book_counts.book_count, 0)::int AS book_count
+        FROM awards a
+        LEFT JOIN (
+          SELECT
+            ba.award_id,
+            COUNT(DISTINCT ba.book_id)::int AS book_count
+          FROM book_awards ba
+          JOIN books b ON b.id = ba.book_id
+          WHERE b.verified = true
+          GROUP BY ba.award_id
+        ) book_counts ON book_counts.award_id = a.id
+        WHERE a.prize_name IS NOT NULL
+          AND a.prize_name <> ''
+          AND COALESCE(a.prize_type, '') <> 'career'
+        ORDER BY a.prize_name;
+      `);
+
+      return result.rows;
+    }, res);
+
+    return res.json(rows);
+  } catch (error) {
+    console.error('Error fetching book awards:', error);
+    return res.status(500).json({ message: 'Error fetching book awards' });
   }
 });
 
@@ -1178,6 +1499,7 @@ app.get('/api/books-for-profile', async (req, res) => {
             AND b.verified = true
             AND b.role = 'winner'
             AND COALESCE(a.full_name, '') <> ''
+            AND LOWER(COALESCE(a.full_name, '')) <> 'no winner'
             AND COALESCE(
               b.prize_year,
               award_year_lookup.award_year,
@@ -1217,14 +1539,59 @@ app.get('/api/books-for-profile', async (req, res) => {
           WHERE COALESCE(aa.verified, true) = true
             AND COALESCE(aa.role, 'winner') = 'winner'
             AND COALESCE(a.full_name, '') <> ''
+            AND LOWER(COALESCE(a.full_name, '')) <> 'no winner'
             AND COALESCE(aa.prize_year, aw.prize_year) IS NOT NULL
             AND COALESCE(aw.prize_type, '') = 'career'
+        ), catalog_candidates AS (
+          SELECT DISTINCT ON (LOWER(b.title), b.author_id)
+            'catalog'::text AS entry_type,
+            b.id AS entry_id,
+            b.id AS book_id,
+            NULL::integer AS author_award_id,
+            b.title AS title_of_winning_book,
+            CASE
+              WHEN LOWER(COALESCE(TRIM(b.genre), '')) = 'prose' THEN 'Prose'
+              WHEN LOWER(COALESCE(TRIM(b.genre), '')) = 'poetry' THEN 'Poetry'
+              WHEN COALESCE(TRIM(b.genre), '') = '' THEN 'Unknown'
+              ELSE INITCAP(TRIM(b.genre))
+            END AS prize_genre,
+            COALESCE(a.full_name, 'Unknown Author') AS full_name,
+            COALESCE(a.given_name, '') AS author_first_name,
+            COALESCE(a.last_name, '') AS author_last_name,
+            ARRAY[]::text[] AS prize_names,
+            ARRAY['catalog'::text] AS prize_types,
+            CASE
+              WHEN COALESCE(author_scope.book_count, 0) > 0 AND COALESCE(author_scope.career_count, 0) > 0 THEN 'both'
+              WHEN COALESCE(author_scope.career_count, 0) > 0 THEN 'career'
+              ELSE 'book'
+            END AS author_award_scope,
+            b.prize_year::text AS prize_year
+          FROM books b
+          LEFT JOIN authors a ON b.author_id = a.id
+          LEFT JOIN author_scope ON author_scope.author_id = b.author_id
+          WHERE b.role = 'catalog'
+            AND COALESCE(a.full_name, '') <> ''
+            AND LOWER(COALESCE(a.full_name, '')) <> 'no winner'
+            AND (
+              EXISTS (SELECT 1 FROM books bw WHERE bw.author_id = b.author_id AND bw.role = 'winner')
+              OR EXISTS (SELECT 1 FROM author_awards aa WHERE aa.author_id = b.author_id)
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM books bw
+              WHERE bw.author_id = b.author_id
+                AND LOWER(TRIM(bw.title)) = LOWER(TRIM(b.title))
+                AND bw.role = 'winner'
+            )
+          ORDER BY LOWER(b.title), b.author_id, b.prize_year DESC NULLS LAST
         )
         SELECT *
         FROM book_candidates
         UNION ALL
         SELECT *
-        FROM career_candidates;
+        FROM career_candidates
+        UNION ALL
+        SELECT *
+        FROM catalog_candidates;
       `);
 
       const cleanAuthorName = (name) => {
@@ -1324,6 +1691,85 @@ app.get('/api/books-for-profile', async (req, res) => {
   } catch (error) {
     console.error('Error fetching books for profile:', error);
     return res.status(500).json({ message: 'Error fetching books' });
+  }
+});
+
+app.get('/api/search-books-award-winners', async (req, res) => {
+  try {
+    const books = await withClient(async (client) => {
+      const result = await client.query(`
+        WITH linked_book_awards AS (
+          SELECT DISTINCT
+            b.id AS book_id,
+            b.title AS clean_title,
+            CASE
+              WHEN LOWER(COALESCE(TRIM(b.genre), '')) = 'prose' THEN 'Prose'
+              WHEN LOWER(COALESCE(TRIM(b.genre), '')) = 'poetry' THEN 'Poetry'
+              WHEN COALESCE(TRIM(b.genre), '') = '' THEN 'Unknown'
+              ELSE INITCAP(TRIM(b.genre))
+            END AS prize_genre,
+            COALESCE(a.full_name, 'Unknown Author') AS full_name,
+            COALESCE(a.given_name, '') AS author_first_name,
+            COALESCE(a.last_name, '') AS author_last_name,
+            aw.prize_name,
+            COALESCE(aw.prize_year, b.prize_year)::text AS prize_year
+          FROM books b
+          JOIN authors a ON a.id = b.author_id
+          JOIN book_awards ba ON ba.book_id = b.id
+          JOIN awards aw ON aw.id = ba.award_id
+          WHERE b.verified = true
+            AND b.role = 'winner'
+            AND COALESCE(aw.prize_type, '') <> 'career'
+            AND COALESCE(aw.prize_name, '') <> ''
+            AND COALESCE(aw.prize_year, b.prize_year) IS NOT NULL
+            AND COALESCE(a.full_name, '') <> ''
+            AND LOWER(COALESCE(a.full_name, '')) <> 'no winner'
+        ), legacy_book_awards AS (
+          SELECT DISTINCT
+            b.id AS book_id,
+            b.title AS clean_title,
+            CASE
+              WHEN LOWER(COALESCE(TRIM(b.genre), '')) = 'prose' THEN 'Prose'
+              WHEN LOWER(COALESCE(TRIM(b.genre), '')) = 'poetry' THEN 'Poetry'
+              WHEN COALESCE(TRIM(b.genre), '') = '' THEN 'Unknown'
+              ELSE INITCAP(TRIM(b.genre))
+            END AS prize_genre,
+            COALESCE(a.full_name, 'Unknown Author') AS full_name,
+            COALESCE(a.given_name, '') AS author_first_name,
+            COALESCE(a.last_name, '') AS author_last_name,
+            aw.prize_name,
+            COALESCE(aw.prize_year, b.prize_year)::text AS prize_year
+          FROM books b
+          JOIN authors a ON a.id = b.author_id
+          JOIN awards aw ON aw.id = b.award_id
+          WHERE b.verified = true
+            AND b.role = 'winner'
+            AND COALESCE(aw.prize_type, '') <> 'career'
+            AND COALESCE(aw.prize_name, '') <> ''
+            AND COALESCE(aw.prize_year, b.prize_year) IS NOT NULL
+            AND COALESCE(a.full_name, '') <> ''
+            AND LOWER(COALESCE(a.full_name, '')) <> 'no winner'
+            AND NOT EXISTS (
+              SELECT 1
+              FROM book_awards ba
+              WHERE ba.book_id = b.id
+            )
+        )
+        SELECT *
+        FROM linked_book_awards
+        UNION ALL
+        SELECT *
+        FROM legacy_book_awards
+        ORDER BY author_last_name, author_first_name, clean_title, prize_year, prize_name;
+      `);
+
+      return result.rows;
+    }, res);
+
+    return res.json(books);
+  } catch (error) {
+    console.error('Error fetching search-books award winners:', error);
+    return res.status(500).json({ message: 'Error fetching search books' });
   }
 });
 

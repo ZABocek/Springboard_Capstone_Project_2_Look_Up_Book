@@ -193,11 +193,40 @@ erDiagram
         boolean verified
         varchar role
         varchar source
+        text like_dislike
+    }
+
+    book_awards {
+        int id PK
+        int book_id FK
+        int award_id FK
+        timestamp created_at
+    }
+
+    author_awards {
+        int id PK
+        int author_id FK
+        int award_id FK
+        int prize_year
+        varchar role
+        varchar source
+        boolean verified
+        numeric prize_amount
+        text like_dislike
+        timestamp created_at
     }
 
     user_book_likes {
-        int like_id PK
+        int id PK
         int user_id FK
+        int book_id FK
+        date likedon
+        boolean liked
+    }
+
+    admin_book_likes {
+        int id PK
+        int admin_id FK
         int book_id FK
         date likedon
         boolean liked
@@ -207,20 +236,31 @@ erDiagram
         int id PK
         int user_id FK
         int book_id FK
+        int author_award_id FK
     }
 
     books }o--|| authors : "written by"
-    books }o--|| awards : "awarded by"
+    books }o--|| awards : "legacy award"
+    book_awards }o--|| books : "book"
+    book_awards }o--|| awards : "award"
+    author_awards }o--|| authors : "author"
+    author_awards }o--|| awards : "career award"
     user_book_likes }o--|| users : "belongs to"
     user_book_likes }o--|| books : "references"
+    admin_book_likes }o--|| admins : "belongs to"
+    admin_book_likes }o--|| books : "references"
     user_preferred_books }o--|| users : "belongs to"
-    user_preferred_books }o--|| books : "references"
+    user_preferred_books }o--|{ books : "book entry"
+    user_preferred_books }o--|{ author_awards : "career entry"
 ```
 
 > **Notes:**
 > - `admins` and `users` are separate tables. When an admin registers or logs in, the server automatically finds or creates a matching `users` row (keyed on the admin's email) so the admin can use all user-facing features (profile, saved books, etc.).
 > - `people` is a reference table that stores rich biographical metadata about authors imported from external award datasets; `books.person_id` may reference a `people` record for enriched author data.
-> - `user_book_likes` has a unique constraint on `(user_id, book_id)` — one like/dislike per user per book.
+> - `book_awards` is a junction table normalising the many-to-many relationship between books and awards; `books.award_id` is a legacy FK that predates it.
+> - `author_awards` stores career-type prizes given for an author's body of work (not a specific book). These rows are displayed on the homepage and the awards search page.
+> - `user_book_likes` and `admin_book_likes` each have a `UNIQUE (actor_id, book_id)` constraint — one opinion per person per book.
+> - `user_preferred_books.book_id` and `author_award_id` are mutually exclusive: a CHECK constraint enforces that exactly one of the two columns is non-null per row.
 > - `users.username` and `users.email` each have a `UNIQUE` constraint.
 
 ---
@@ -316,6 +356,49 @@ The application will be available at `http://localhost:3000`.
 ## Contributing
 
 Contributions are welcome! Please open an issue first to discuss any significant changes.
+
+---
+
+## Server Architecture
+
+The Express back-end uses a **factory pattern** (`createApp()`) so the application can be instantiated without starting a port listener — making it easy to import in Jest tests without side effects.
+
+```
+server/
+├── server.js            # Thin entry point — calls createApp() and startServer()
+├── app.js               # createApp() factory — mounts all middleware and routers
+├── config.js            # dotenv loader + shared constants (CACHE_KEYS, JWT_SECRET)
+├── db.js                # pg Pool singleton (one connection pool for the app lifetime)
+├── cache.js             # ioredis wrapper — get/set/del + cacheMiddleware()
+├── middleware/
+│   ├── auth.js          # getBearerToken, authenticateToken, requireAdmin, authorizeSelfOrAdmin
+│   └── logger.js        # requestLogger — logs method, path, status, elapsed time
+├── routes/
+│   ├── auth.js          # POST /signup  /login  /admin/login  /admin/register
+│   │                    # GET  /api/is-admin/:userId  /admin/profile-user
+│   ├── catalog.js       # GET  /api/tableName  /api/authors  /api/books/:authorId
+│   │                    # GET  /api/books-for-profile  /api/search-books-award-winners
+│   ├── awards.js        # GET  /api/awards  /api/book-awards  /api/awards/:awardId
+│   ├── likes.js         # POST /api/like
+│   ├── profile.js       # GET/POST /api/user/preference/*
+│   │                    # GET  /api/user/:userId/preferred-books
+│   │                    # POST /api/user/add-book  /api/user/remove-book
+│   │                    # POST /api/submit-book
+│   └── admin.js         # GET/PATCH/DELETE  /api/unverified-books  /api/books/:id/verification
+│                        # GET  /api/verified-submitted-books  /api/admin/cache/status
+│                        # POST /api/admin/cache/flush
+└── utils/
+    ├── dbHelpers.js     # withClient(handler) — pool client lifecycle management
+    └── schemaSetup.js   # Idempotent DDL helpers run once at startup
+```
+
+Key design decisions:
+- **`require.main` guard** in `server.js` — `startServer()` only executes when the file is run directly, never when `require()`d by tests.
+- **`withClient`** — always releases the pool client in a `finally` block, preventing connection leaks on errors.
+- **Cache middleware** — applied at the route level via `cache.cacheMiddleware(key, TTL)` so each endpoint controls its own TTL.
+- **`authorizeSelfOrAdmin`** — a closure that accepts a function extracting the target user ID from the request, enabling a single middleware factory to secure many different routes.
+
+---
 
 ---
 

@@ -1,0 +1,6 @@
+Book-awards mapping ensured.
+Author-awards model ensured.
+Like/dislike infrastructure ensured.
+Server is running on port 5000
+[2026-03-17T11:43:49.844Z] GET /api/books-for-profile -> 200 (741ms)
+[2026-03-17T11:44:09.543Z] GET /api/books-for-profile -> 200 (746ms)

@@ -4,16 +4,28 @@
     "description": "Backend server for the React application",
     "main": "server.js",
     "scripts": {
-        "start": "node server.js"
+        "start": "node server.js",
+        "test": "jest --runInBand --forceExit"
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "testMatch": ["**/__tests__/**/*.test.js", "**/*.test.js"],
+        "testPathIgnorePatterns": ["/node_modules/"]
     },
     "dependencies": {
         "bcrypt": "^6.0.0",
         "body-parser": "^1.19.0",
+        "compression": "^1.8.1",
         "cors": "^2.8.5",
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
+        "ioredis": "^5.10.1",
         "jsonwebtoken": "^9.0.2",
         "pg": "^8.11.3",
         "uuidv4": "^6.2.13"
+    },
+    "devDependencies": {
+        "jest": "^30.3.0",
+        "supertest": "^7.2.2"
     }
 }

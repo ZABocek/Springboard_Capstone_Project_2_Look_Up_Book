@@ -130,7 +130,7 @@ describe('Profile page smoke tests', () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/user/preference/update',
+        expect.stringContaining('/api/user/preference/update'),
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({

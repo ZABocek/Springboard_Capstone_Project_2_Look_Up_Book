@@ -1,13 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
-import LoginSignup from './Loginsignup';
-import Homepage from './Homepage';
-import AddDbBook from './add-db-book';
-import AddNewBook from './add-new-book';
-import AdminVerification from './admin-verification';
-import SearchBooks from './search-books';
-import Profile from './Profile';
-import SearchAwards from './search-awards';
+
+// ---------------------------------------------------------------------------
+// Lazy-loaded route components – each page only downloads its JS bundle when
+// first visited, so the initial page load is significantly smaller and
+// switching to a new page shows a brief spinner while its chunk downloads.
+// ---------------------------------------------------------------------------
+const LoginSignup       = lazy(() => import('./Loginsignup'));
+const Homepage          = lazy(() => import('./Homepage'));
+const AddDbBook         = lazy(() => import('./add-db-book'));
+const AddNewBook        = lazy(() => import('./add-new-book'));
+const AdminVerification = lazy(() => import('./admin-verification'));
+const SearchBooks       = lazy(() => import('./search-books'));
+const Profile           = lazy(() => import('./Profile'));
+const SearchAwards      = lazy(() => import('./search-awards'));
+
+// Minimal loading indicator displayed while a chunk is being fetched
+function PageLoader() {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <p style={{ fontSize: '1.1rem', color: '#555' }}>Loading…</p>
+    </div>
+  );
+}
 
 function ProtectedRoute({ children, adminOnly = false }) {
   const token = localStorage.getItem('token');
@@ -41,7 +56,8 @@ function App() {
 
   return (
     <Router>
-      <Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
         <Route
           path="/"
           element={<Navigate replace to={isAuthenticated ? '/homepage' : '/login'} />}
@@ -113,7 +129,8 @@ function App() {
           }
         />
         <Route path="*" element={<Navigate replace to="/" />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

@@ -13,11 +13,13 @@
 
 const { createApp } = require('./app');
 const { pool } = require('./db');
+const cache = require('./cache');
 const {
   ensureBookAwardsMapping,
   ensureAuthorAwardsModel,
   ensureLikeDislikeInfrastructure,
 } = require('./utils/schemaSetup');
+const { registerShutdownHandlers } = require('./utils/gracefulShutdown');
 
 const app = createApp();
 
@@ -43,6 +45,8 @@ async function startServer() {
     console.error('Server error:', err);
     process.exit(1);
   });
+
+  registerShutdownHandlers({ httpServer: server, pool, cache });
 }
 
 // Only start listening when executed directly (not when required by tests)

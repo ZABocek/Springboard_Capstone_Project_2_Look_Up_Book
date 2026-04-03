@@ -150,4 +150,27 @@ function cacheMiddleware(key, ttlSeconds) {
   };
 }
 
-module.exports = { get, set, del, delPattern, cacheMiddleware, TTL };
+/**
+ * Disconnect the Redis client cleanly.
+ *
+ * Sets `client` to null and clears `redisAvailable` *before* calling
+ * `c.quit()`, so any concurrent in-flight request sees the cache as
+ * unavailable and falls through to the database rather than trying to
+ * use a half-closed connection.
+ *
+ * Safe to call even if Redis was never initialised (lazy-init means
+ * `client` may still be null), and idempotent — calling it twice is fine.
+ */
+async function quit() {
+  if (!client) return;
+  const c = client;
+  client = null;
+  redisAvailable = false;
+  try {
+    await c.quit();
+  } catch {
+    // Best-effort — the process is already exiting.
+  }
+}
+
+module.exports = { get, set, del, delPattern, cacheMiddleware, quit, TTL };

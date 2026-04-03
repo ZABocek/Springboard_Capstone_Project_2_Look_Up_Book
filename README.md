@@ -7,6 +7,7 @@
 
 ## Table of Contents
 
+- [Quick Start](#quick-start)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Application Pages](#application-pages)
@@ -16,8 +17,17 @@
 - [Installation](#installation)
 - [Environment Variables](#environment-variables)
 - [Running the Application](#running-the-application)
+- [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
+
+---
+
+## Quick Start
+
+> **Windows users:** After completing the one-time [Installation](#installation) steps, just double-click **`launch.bat`** at the project root. That's it — the backend, frontend, and browser all start automatically. The database is never dropped or reset on launch.
+
+For non-Windows or manual control, see [Running the Application](#running-the-application).
 
 ---
 
@@ -333,7 +343,22 @@ JWT_SECRET=your_jwt_secret_here
 
 ## Running the Application
 
-In two separate terminals:
+### Option A — One-click launcher (recommended for Windows)
+
+Double-click **`launch.bat`** at the project root.
+
+The script:
+1. Stops any stale Node.js processes (prevents port-conflict errors).
+2. Ensures the PostgreSQL service is running — **no data is ever dropped or reset**.
+3. Opens the Express backend in a labelled terminal window on port 5000.
+4. Opens the React dev-server in a labelled terminal window on port 3000.
+5. Waits ~20 seconds for React to compile, then opens `http://localhost:3000` in your default browser.
+
+To stop the app, close the **"Look Up Book - Backend"** and **"Look Up Book - Frontend"** terminal windows.
+
+> **Note:** The first run after a reboot may take slightly longer if PostgreSQL needs a few extra seconds to start. If the browser opens before React is ready, refresh the page.
+
+### Option B — Manual start (two terminals)
 
 **Terminal 1 — backend (port 5000):**
 
@@ -356,6 +381,45 @@ The application will be available at `http://localhost:3000`.
 ## Contributing
 
 Contributions are welcome! Please open an issue first to discuss any significant changes.
+
+---
+
+## Testing
+
+The project has **213 automated tests** across three suites.
+
+### Server tests (Jest)
+
+```bash
+cd server
+npm test
+```
+
+Covers all REST API endpoints, authentication, admin flows, cache helpers, and startup idempotency (verification that `launch.bat` and the server's schema-migration helpers never drop or truncate any database tables).
+
+### Client tests (React Testing Library / Jest)
+
+```bash
+cd client
+npm test -- --watchAll=false
+```
+
+Covers all React components and their API interactions.
+
+### Python worker tests (pytest)
+
+```bash
+.venv\Scripts\python.exe -m pytest worker/tests/ -v
+```
+
+Covers the Celery task helpers and cache-key consistency.
+
+| Suite | Tests |
+|---|---|
+| Server (Jest) | 108 |
+| Client (React Testing Library) | 83 |
+| Python worker (pytest) | 22 |
+| **Total** | **213** |
 
 ---
 

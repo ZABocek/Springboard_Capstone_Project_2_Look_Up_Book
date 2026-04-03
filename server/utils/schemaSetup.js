@@ -4,7 +4,10 @@
  * One-time (idempotent) DDL helpers run at server startup.
  *
  * Each function checks whether the schema objects it needs already exist
- * before creating them, so they are safe to run on every boot.
+ * before creating them, so they are safe to run on every boot without
+ * dropping or truncating any data.  This is a requirement enforced by the
+ * launcher (launch.bat) and verified by the launcher test suite
+ * (server/__tests__/launcher.test.js).
  *
  * Exports:
  *   resolveOrCreateUserIdForAdmin
